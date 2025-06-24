@@ -1,0 +1,301 @@
+---
+title: "week_5_assignment"
+author: "sharath kasula"
+date: "2024-06-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+# Load the necessary libraries
+#install.packages("dplyr")
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+library(faraway)
+
+
+dvisits$sex <- as.factor(dvisits$sex)
+dvisits$levyplus <- as.factor(dvisits$levyplus)
+dvisits$freepoor <- as.factor(dvisits$freepoor)
+dvisits$freerepa <- as.factor(dvisits$freerepa)
+dvisits$chcond1 <- as.factor(dvisits$chcond1)
+dvisits$chcond2 <- as.factor(dvisits$chcond2)
+
+?dvisits
+```
+##1Q You will be using the nondocco variable as your outcome variable. Use an appropriate graph to visualize the distribution of the nondocco variable. Describe the distribution of this variable
+# Create a histogram of the 'nondocco' variable from the 'dvisits' dataset
+# The x-axis is labeled "Number of consultations" to represent the number of non-doctor consultations
+# The y-axis is labeled "Count" to represent the frequency of each number of consultations
+```{r}
+hist(dvisits$nondocco, xlab = "Number of consultations", ylab = "Count")
+
+```
+##Interpretation
+The title of the histogram is "Histogram of dvisits$nondocco".
+X-axis (Number of consultations): Shows the number of non-doctor consultations, ranging from 0 to 10.
+Y-axis (Count): Displays the number of individuals for each consultation count, ranging from 0 to over 5000.
+
+High Frequency at 0 Consultations: Over 5000 individuals had 0 non-doctor consultations.
+Low Frequency for Higher Consultations: Very few individuals had more than 1 consultation, with a significant drop in counts.
+Right-Skewed Distribution: Non-doctor consultations are uncommon in this dataset.
+
+
+```{r}
+summary(as.factor(dvisits$nondocco))
+
+```
+###Interpretation
+Majority: Most individuals (4716) have zero visits.
+Trend: Frequency decreases as the number of visits increases.
+Skewed Data: The data is heavily skewed towards zero visits.
+
+
+###2Q Build a comprehensive Poisson regression model to predict nondocco using all available in the dataset. Address the following: 
+# Fit a Poisson regression model
+# Generate and display a summary of the fitted model
+```{r}
+mod.poisson <- glm(nondocco ~ ., family=poisson,
+                   data=dvisits)
+summary(mod.poisson)
+```
+###Interpretation
+The Poisson regression model was used to estimate the number of visits, to doctor offices (`nondocco`) based on different factors in the `dvisits` dataset. Noteworthy factors include `sex1` (Estimate; 0.330327 p = 2.51e 06) indicating visits for a gender and `age` (Estimate; 2.977927 p = 0.017) and `agesq` (Estimate; 3.917097, p = 0.003) hinting at a nonlinear connection with visits. Other important factors are `levyplus1` (Estimate; 0.279006 p = 0.005) `freerepa1` (Estimate; 0.450816 p = 0.000113) `actdays` (Estimate; 0.079984 p < 2e 16) `hscore` (Estimate; 0.031122 p = 0.008) `chcond11` (Estimate; 0.493941 p = 1.e 08) `chcond21` (Estimate;.976255 p <.02e 16) 'doctorco' (estimate;.064031,p=.006)and 'hospdays estimates;.016217,p=1.e 12). Factors like 'income' 'freepoor1' 'illness 'medicine' and 'prescrib' did not show effects on the prediction model due to singularity issues, with the predictor 'nonpresc'. 
+The null deviance of the model is 6127.9, with 5189 degrees of freedom while the residual deviance stands at 4965.3 with 5172 degrees of freedom leading to an AIC value of 6179.1. This suggests that multiple factors have an impact, on the logarithm count of doctor office visits particularly `actdays` `chcond21` and `sex1` displaying noticeable effects.
+
+
+###2.a Identify the significant predictors in the model
+The important factors, in the Poisson regression model for doctor office visits include;
+
+ The intercept with an estimate of 2.507338 and p value less than 2e 16
+ sex1 with an estimate of 0.330327 and p value of 2.51e 06
+ age with an estimate of 2.977927 and p value of 0.017017
+ agesq with an estimate of 3.917097 and p value of 0.003105
+ levyplus1 with an estimate of 0.279006 and p value of 0.004553
+ freerepa1 with an estimate of 0.450816 and p value of 0.000113
+ actdays with an estimate of 0.079984 and p value less than 2e 16
+ hscore with an estimate of 0.031122 and p value of 0.008056
+ chcond11 with an estimate of 0.493941 and p value of 1.79e 08
+
+The Poisson regression model highlights these significant predictors, for non doctor office visits.
+The estimated values, for `doctorco` and `hospdays` are 0.064031 (p = 0.005668) and 0.016217 (p = 1.79e 12) 
+
+One predictor, `hospadmi` has an estimate of 0.074984 with a p value of 0.061154 making it marginally significant.
+
+These predictors with p values below 0.05 play a role in influencing the number of non doctor office visits in the dataset while `hospadmi` is above the threshold for significance at slightly, above 0.05.
+
+
+
+###2.bInterpret the association between general health questionnaire score (hscore) and the expected number of non-doctor consultations(nondocco).
+The connection, between a persons health questionnaire score (hscore) and the anticipated number of doctor consultations is crucial. In the Poisson regression model the coefficient for hscore is 0.031122, with a p value of 0.008056 signifying a positive relationship between hscore and non doctor office visits.
+
+Interpreted in a context a higher hscore indicates self reported health. The positive coefficient of 0.031122 implies that as ones hscore rises reflecting deteriorating perceived health the expected count of doctor office visits also rises.
+
+To break it down further for each increase in hscore by one unit, the logarithm of non doctor office visits increases by 0.031122. By exponentiating the value we can translate this into a rise in visit numbers.
+
+In real life scenarios individuals experiencing self perceived health or more health related worries ( hscore) tend to seek non doctor consultations more frequently. This could involve appointments with alternative healthcare providers like therapists or practitioners, beyond doctors.
+The strong connection emphasizes how crucial it is, for peoples perceptions of their health to influence their decisions to seek healthcare. It shows that those who feel they have health needs are likely to seek attention beyond regular doctor appointments.
+
+The significance of self assessed health evaluations in predicting and comprehending healthcare usage trends. By considering these assessments healthcare providers can anticipate the demand for services, than those provided by doctors. Distribute resources accordingly to cater to individuals who view their health status as less favorable.
+###2.c what is the deviance statistic for this model, and what does it indicate about the model fit?
+
+The difference, between residual deviance in a Poisson regression helps us understand how well our model fits the data in comparison to a model with no predictors. We have two values to consider;
+
+ The null deviance, which is 6127.9 illustrates the fit of the model to the data.
+ The residual deviance at 4965.3 indicates how better our enhanced model with predictors fits compared to the one.
+
+A lower residual deviance suggests that our model with predictors is more effective at explaining the data than the model. The 17 degrees of freedom difference, between these deviances shows how predictors we added to enhance our model.
+
+In summary these values show that incorporating predictors has significantly enhanced our models capabilities compared to a predictor model.
+
+
+###2.d Use halfnorm and qqnorm plots to evaluate the goodness of fit for this Poisson model. What do these plots reveal about the model's performance and potential areas for improvement?
+# Generate a half-normal plot of the residuals from the Poisson regression model
+```{r}
+halfnorm(residuals(mod.poisson))
+```
+###Interpretation 
+Half-Normal Plot Interpretation
+
+Close to Line: Most points are near the reference line, indicating a good model fit for these observations.
+Outliers: Points "2777" and "3792" are far from the line, suggesting poor fit for these specific data points.
+
+Summary
+Good Fit: For most data points, the Poisson model fits well.
+Issues: Significant outliers suggest potential overdispersion or model fit issues that may require further investigation or alternative models.
+
+# Generate a Q-Q plot of the residuals from the Poisson regression model
+```{r}
+qqnorm(residuals(mod.poisson))
+
+```
+###Interpretation
+Q-Q Plot Interpretation
+
+Points Near the Line: In the middle, points follow the reference line, indicating normality for central quantiles.
+Left Tail: Points slightly deviate, showing minor departures from normality.
+Right Tail: Significant deviations suggest non-normality, indicating outliers or overdispersion.
+
+Summary
+Good Fit: Central residuals are close to normal.
+Issues: Tails, especially the right, show significant deviations.
+
+Recommendations
+Investigate Outliers: Examine points far from the line.
+Alternative Models: Consider a negative binomial model for overdispersion.
+
+
+
+###3Q Refit the "full" Poisson model predicting nondocco after you include the dispersion parameter. 
+
+# Calculate the dispersion parameter (φ) for the Poisson regression model
+```{r}
+(dispersion.param <- sum(residuals(mod.poisson, type="pearson")^2/mod.poisson$df.res))
+```
+###Interpretation
+The dispersion parameter of 2.902117 indicates overdispersion in the data, meaning the Poisson model is not suitable. Consider using a negative binomial model to better handle this excess variability.
+
+#With the computed value of φ, we can adjust the standard errors for our model using the following approach:
+```{r}
+summary(mod.poisson, dispersion=dispersion.param) 
+```
+###Interpretation
+`sex1`; Shows an impact (p < 0.00001)
+`age`; Indicates an influence (p = 0.017)
+`agesq`; Demonstrates a positive quadratic effect (p = 0.003)
+`levyplus1`; Exhibits a positive relationship (p = 0.005)
+`freerepa1`; Reflects a positive association (p < 0.0001)
+`actdays`; Indicates a positive correlation (p < 0.00001)
+`hscore`; Shows a positive effect (p = 0.008)
+`chcond11` `chcond21`; Both exhibit positive effects, with high significance levels (p < 0.00001 for both)
+The variables related to conditions
+Impact on the outcome
+Highly statistically significant
+
+ Insignificant Predictors
+  The variables such as `income` `freepoor1` `illness` `medicine` and`prescrib` did not show significant predictive power in the model.
+
+ Model Evaluation
+  The models performance metrics are as follows;
+  Null deviance; deviance at 6127.9 on degrees of freedom to 
+  Residual deviance; Final deviance at 
+  AIC value stands at 
+
+ Additional Considerations
+  Considering the high occurrence of zero counts in the variable 'nondocco' and potential overdispersion it is advisable to explore alternative models like zero inflated or negative binomial regression, for better fit.
+  
+###3.aIdentify the significant coefficients in the refitted model with the dispersion parameter included.
+Significant Findings After Accounting for Variability
+
+ (Baseline); p value, than 4.5e 08
+ gender; p value = 0.0128
+ consultations; p value = 0.0412
+ active days; p value less than 2.7e 11
+ chronic condition type 1; p value = 0.0015
+ chronic condition type 2; p value less than 4.4e 08
+ hospitalization days; p value = 6.9e 05
+
+In summary the factors (Baseline, gender, free consultations, days chronic condition type 1 chronic condition type 2 hospitalization days) show a relationship, with the frequency of non medical office visits even when accounting for potential overdispersion.
+
+###3.b Discuss the role of adding the dispersion parameter to the model.How does it affect the model fit?
+The role of the dispersion parameter, in a Poisson regression model is vital when the data displays variability than anticipated referred to as overdispersion. Normally a Poisson model assumes that the datas variance equals its mean. However real world data often exhibits variability. The dispersion parameter assists the model in accommodating this variation enhancing its accuracy. Without this parameter the model may struggle to fit in cases of variation resulting in incorrect standard errors and potentially biased conclusions regarding the significance and impact of predictors.
+
+Effect on Model Fit and Interpretation
+
+Incorporating the dispersion parameter enhances the models fit by capturing the distribution within the data. This adjustment leads to realistic predictions. The coefficients, which signify how predictors influence outcomes may slightly adjust to enhance the models fit. Moreover changes in errors. Which indicate uncertainty around these coefficients. Can impact confidence levels in predictions. Overall including the dispersion parameter enhances the reliability of the models predictions and aids in capturing patterns and relationships within the data. This adjustment is crucial for ensuring precise conclusions from Poisson regression analyses in intricate datasets where adherence, to basic Poisson assumptions may be challenging.
+
+###4Q Next, fit a ZIP model using the predictors: sex, actdays, chcond1, chcond2, and hospdays
+# Load the 'pscl' package, which contains functions for fitting zero-inflated count models
+# Fit a zero-inflated Poisson regression model ('zeroinfl') to the data
+# Generate and display a summary of the fitted zero-inflated Poisson regression model
+```{r}
+library(pscl)
+
+mod.zip.reduced <- zeroinfl(nondocco ~ sex + actdays + chcond1 + chcond2 + hospdays | sex + actdays + chcond1 + chcond2 + hospdays, data = dvisits)
+
+summary(mod.zip.reduced)
+
+```
+###Interpretation
+In the statistical model analysis we observed the following results;
+ The intercept showed results (p = 0.0747).
+ Gender (sex1) did not show a significant impact (p = 0.1196).
+ The number of days had a positive effect, on the visit count (p < 0.001).
+ The presence of chcond21 had a influence on visit counts (p < 0.001).
+ Hospitalization days also had a impact on visit counts (p < 0.001).
+
+When considering zero inflation in the model;
+ The intercept displayed high significance levels (p < 0.001).
+ Gender, days and chcond11 all exhibited negative effects, on excess zeros probabilities (p < 0.001).`actdays` `chcond21` and `hospdays` have an effect, on the number of non doctor office visits while `sex1` `actdays` `chcond11` `and `hospdays` play a role, in reducing the chance of excess zeros occurring.
+ 
+###4.a Comment on which predictors are significant and which are not in the ZIP model.
+In the Zero Inflated Poisson (ZIP) Model predictors play a role in either the zero inflation ( part) or the count model (Poisson part). Here's a rundown of the predictors importance based on the provided results;
+
+In the zero inflation model key factors such, as sex, activity days chronic conditions and hospitalization days play a role (p <0.001). They affect the presence of zeros in the data.
+
+Overall all predictors are statistically significant in the zero inflation model. In the count model factors, like activity days specific chronic conditions and hospitalization days stand out. This indicates that certain elements influence the likelihood of zeros while others impact the count of non medical consultations.
+
+###4.b Interpret the coefficient for actdays in both the Count Model (Poisson) and the Zero-Inflation Model (binomial).
+In the zero inflated Poisson (ZIP) model the effect of `actdays` is interpreted differently in the count model (Poisson part). The zero inflation model ( part).
+
+In the ZIP model the number of days (`actdays`) has an impact, on the two components;
+ Count Model (Poisson Part); More `actdays` are linked to a rise in the expected count of non doctor consultations.
+Zero Inflation Model (Binomial Part); Increasing `actdays` is connected to a drop, in the likelihood of observing zeros.Essentially engaging in physical activity results, in a frequency of non medical consultations and a lower chance of encountering excessive zero values in the data.
+
+###5Q Next, using the model computed in Q4, Create a new observation with the following specified values: female, 7 actdays, chcond1 = 1, chcond2 = 0, hospdays = 3. Predict and interpret the probability that this individual will have zero consultations (nondocco = 0) and the probability that the individual will have one consultation (nondocco = 1). Discuss the results in the context of the individual's characteristics.
+
+# Define a new observation for prediction
+# Predict the probabilities of different outcomes using the fitted zero-inflated Poisson regression model
+# Extract the first 8 elements (if available) of the prediction result
+```{r}
+
+new_observation  <- data.frame(sex = "1", actdays = 7,chcond1 = "1",chcond2 = "0",hospdays = 3)
+predict(mod.zip.reduced, newdata=new_observation, type="prob")[1:3] 
+```
+###Interpretation
+ For an individual characterized by being of sex 1, having 7 active days, having chronic condition 1, not having chronic condition 2, and having 3 hospital days, the zero-inflated Poisson (ZIP) model predicts the probabilities for the number of non-doctor office visits as follows: there is a 78.94% chance of having zero non-doctor office visits, a 5.54% chance of having one non-doctor office visit, and a 6.26% chance of having two non-doctor office visits. These predictions indicate that this individual is highly likely to have no non-doctor office visits, with much lower probabilities for having one or two visits. This suggests that, according to the model, the individual's profile is strongly associated with not requiring non-doctor consultations.
+ 
+# Predict the expected counts (zero-inflated component) using the fitted zero-inflated Poisson regression model
+# Extract the first 8 elements (if available) of the prediction result
+```{r}
+predict(mod.zip.reduced, newdata = new_observation, type = "zero")[1:3] 
+```
+
+### Interpretation
+Probability of 1: 0.7648763 (76.49%)
+Probability of NA: Not Available (due to the structure of the ZIP model)
+
+For the new observation characterized by specific attributes:
+- The predicted probability of observing one non-doctor office visit (`nondocco = 1`) is 76.49%.
+- The "NA" values indicate that the model does not provide predictions for counts other than zero and one, typically due to the structure of the zero-inflation model where excess zeros are explicitly modeled separately.
+
+These predictions suggest that, according to the ZIP model, there is a high likelihood (76.49%) of observing exactly one non-doctor office visit for an individual with the specified characteristics. The model structure inherently accounts for the likelihood of excess zeros, which is why probabilities for counts other than zero and one are not provided.
