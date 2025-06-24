@@ -1,0 +1,300 @@
+---
+title: "week_7_assignment"
+author: "sharath kasula"
+date: "2024-07-07"
+output: html_document
+---
+```{r}
+getwd()
+setwd("/Users/sharath/Desktop/week.7")
+```
+
+
+```{r}
+if(!library("asaur", logical.return = TRUE)){
+  install.packages("asaur")
+}
+library(asaur)
+summary(pharmacoSmoking)
+source("unfold.R") ## needed for the unfold function
+library(survival)
+?pharmacoSmoking
+```
+###Q1Build a Cox PH model to predict the time until relapse (return to smoking) using a set of predictors: gender, race, employment, yearsSmoking, levelSmoking, priorAttempts, and longestNoSmoke. Identify which predictors are significant.?
+# Load necessary library
+# Fit Cox proportional hazards model
+# Display the summary of the fitted model
+```{r}
+mod.coxph.base <- coxph(Surv(ttr, relapse) ~ gender + race + employment +
+                          yearsSmoking + levelSmoking + priorAttempts + longestNoSmoke,
+                        data=pharmacoSmoking)
+summary(mod.coxph.base)
+```
+###Interpretation
+Summary of Cox Proportional Hazards Model Results
+Sample Size: 125 individuals
+Events: 89 relapses
+Significant Findings:
+
+Years Smoking: Each additional year of smoking slightly reduces relapse risk (HR = 0.98, p = 0.048).
+Non-Significant Findings:
+
+Gender (Male): Slightly lower risk (HR = 0.907, p = 0.6827)
+Race: No significant impact for Hispanic, Other, or White races.
+Employment: Other employment types show marginal significance (HR = 1.557, p = 0.0942). Part-time employment is not significant.
+Level of Smoking (Light): Lower risk but not significant (HR = 0.843, p = 0.5257).
+Prior Attempts to Quit: No significant impact (HR = 1.0002, p = 0.8454).
+Longest No-Smoke Period: Minimal effect (HR = 0.9999, p = 0.2533).
+Model Fit:
+
+Concordance: 0.609 (moderate discrimination)
+Model Tests: Likelihood Ratio, Wald, and Score tests all show p = 0.3, indicating the model does not significantly improve prediction over no predictors.
+
+###Q2 To the above model, add age as a predictor.
+# Load necessary library
+# Fit Cox proportional hazards model with age included
+# Display the summary of the fitted model
+```{r}
+mod.coxph.base.age <- coxph(Surv(ttr, relapse) ~ gender + race + employment +
+                          yearsSmoking + levelSmoking + priorAttempts + longestNoSmoke +age,
+                        data=pharmacoSmoking)
+summary(mod.coxph.base.age)
+```
+###Interpretation
+Interpretation of the Extended Cox Proportional Hazards Model
+
+Sample Size and Events
+- n = 125: Total number of individuals.
+- Number of events = 89: Total number of relapse events.
+
+Significant Findings:
+- Age: Each additional year of age reduces the risk of relapse (HR = 0.945, p = 0.0077), indicating that older individuals are less likely to relapse.
+- Employment (Other): Individuals with other employment types have a higher risk of relapse (HR = 2.095, p = 0.0101).
+
+Marginally Significant Findings:
+- Employment (Part-time): Part-time employment is associated with a higher risk of relapse (HR = 1.954, p = 0.0534), but it is only marginally significant.
+
+Non-Significant Findings:
+- Gender (Male): No significant effect (HR = 0.994, p = 0.9810).
+- Race (Hispanic, Other, White): No significant impact on relapse risk.
+- Years Smoking: No significant effect (HR = 1.023, p = 0.2509).
+- Level of Smoking (Light): No significant effect (HR = 0.944, p = 0.8275).
+- Prior Attempts to Quit: No significant effect (HR = 1.000, p = 0.8799).
+- Longest No-Smoke Period: No significant effect (HR = 0.9999, p = 0.5051).
+
+Model Fit:
+- Concordance: 0.646 (moderate discrimination).
+- Likelihood Ratio Test, Wald Test, Score (Log-Rank) Test: All tests show p-values around 0.05-0.06, indicating that the model is borderline significant.
+
+Conclusion
+Adding age to the model reveals that older age is significantly associated with a lower risk of relapse. Employment status also plays a significant role, with other types of employment increasing relapse risk. Other variables, including gender, race, and years of smoking, do not show significant effects. The overall model fit is moderately good, with borderline significance in the model tests.
+
+###Q2A What are the significant predictors?
+The key factors, in the Cox model are as follows;
+
+1. Age; Older people have a reduced likelihood of experiencing a relapse (Hazard Ratio = 0.945, p value = 0.0077).
+2. Employment (Other); Individuals in categories face an increased risk of relapse (Hazard Ratio = 2.095, p value = 0.0101).
+These predictors exhibit significance, with p values below 0.05.
+
+###Q2B Determine whether adding age as a predictor produces a significant improvement in model fit. Cite appropriate evidence to support your response by using the Concordance, Likelihood ratio test, Wald test,and Score (logrank) test ).
+
+Adding age as a predictor improves the model fit significantly. Here's the evidence:
+
+Concordance
+- Base Model: 0.609
+- Extended Model (with age): 0.646
+
+The Concordance value increased, meaning the model's accuracy improved.
+
+Likelihood Ratio Test
+- Base Model: 11.57 (p = 0.3)
+- Extended Model (with age): 19.77 (p = 0.05)
+
+The test statistic is higher and the p-value is lower, indicating a significant improvement.
+
+Wald Test
+- Base Model: 11.18 (p = 0.3)
+- Extended Model (with age): 18.95 (p = 0.06)
+
+The Wald Test also shows an increase, with the p-value close to significance.
+
+Score (Log-Rank) Test
+- Base Model: 11.47 (p = 0.3)
+- Extended Model (with age): 19.3 (p = 0.06)
+
+Similar to the Wald Test, this test shows an increase and a p-value close to significance.
+
+Conclusion
+Adding age to the model significantly improves its accuracy and predictive power, as shown by higher Concordance and better test results.
+
+###Q2C Use an ANOVA test to compare the models and interpret the findings. Which model has better fitness?
+# Compare the base model and the extended model with age
+```{r}
+anova(mod.coxph.base, mod.coxph.base.age)
+```
+###Interpretation
+The ANOVA comparison between the two Cox models provides the following results:
+
+1. Model Comparison:
+   - Model 1: Includes predictors `gender`, `race`, `employment`, `yearsSmoking`, `levelSmoking`, `priorAttempts`, and `longestNoSmoke`.
+   - Model 2: Includes all predictors in Model 1 plus `age`.
+
+2. Log-Likelihood:
+   - Model 1: -380.37
+   - Model 2: -376.27
+
+A higher log-likelihood value (less negative) indicates a better fit to the data.
+
+3. Chi-Square Test Statistic (Chisq): 8.2006
+   - This value represents the improvement in fit from Model 1 to Model 2.
+
+4. Degrees of Freedom (Df): 1
+   - The difference in the number of parameters between the two models (Model 2 has one additional parameter, `age`).
+
+5. p-value (Pr(>|Chi|)): 0.004188
+   - This p-value tests whether the improvement in fit from adding `age` is statistically significant.
+
+ Conclusion
+
+The p-value of 0.004188 is less than 0.05, indicating that the addition of `age` significantly improves the model fit. This means that age is an important predictor for the time to relapse, and including it in the model provides a significantly better fit to the data compared to the model without age.
+
+
+###Q3 Does the relationship between age and the hazard of relapse vary across the two genders? Cite appropriate evidence to support your response.?
+# Load necessary library
+# Fit Cox proportional hazards model with age and gender interaction
+# Display the summary of the fitted model
+```{r}
+mod.coxph.base.age.gender <- coxph(Surv(ttr, relapse) ~ gender + race + employment +
+                          yearsSmoking + levelSmoking + priorAttempts + longestNoSmoke +age:gender,
+                        data=pharmacoSmoking)
+summary(mod.coxph.base.age.gender)
+```
+###Interpretation
+In this study using the Cox hazards model we examined how age and gender interact to influence the risk of relapse. The data set comprised 125 individuals, with 89 instances of relapse.
+
+Key Findings
+
+Interaction, between Gender and Age;
+
+For females; The interaction coefficient between gender and age is 0.0528 with a hazard ratio (HR) of 0.9486. This suggests that as age increases the likelihood of relapse decreases for females, which's statistically significant (p = 0.0173).
+
+For males; The interaction coefficient between gender and age is 0.0683 with a hazard ratio (HR) of 0.9340. This indicates that, as age increases the risk of relapse decreases for males also statistically significant (p = 0.0114).
+
+Employment Category (
+Individuals employed in "categories face a higher risk of relapse (HR = 2.080, p = 0.0113).
+
+Marginally Significant Result
+
+Employment Category (Part time);
+Part time employment is linked to an increased risk of relapse. Only shows significance (HR = 1.966, p = 0.0520).
+Different types of employment also have an impact with "job categories displaying a likelihood of relapse. The models accuracy sees an enhancement, with the inclusion of these factors as suggested by the statistical measures of fit.
+
+
+
+###Q4 the Akaike Information Criterion (AIC) to determine which of the three models built above is the best fit. Provide an interpretation of the AIC values.?
+# Compare the AIC values for the three models
+```{r}
+AIC(mod.coxph.base, mod.coxph.base.age, mod.coxph.base.age.gender)
+
+```
+###Interpretation
+Base Model (mod.coxph.base):
+
+Degrees of Freedom (df): 10
+AIC: 780.74
+Base Model with Age (mod.coxph.base.age):
+
+Degrees of Freedom (df): 11
+AIC: 774.54
+Adding age to the base model lowers the AIC, suggesting an improved model fit compared to the base model.
+Base Model with Age and Gender Interaction (mod.coxph.base.age.gender):
+
+Degrees of Freedom (df): 12
+AIC: 776.07
+Adding the interaction between age and gender increases the AIC slightly compared to the model with only age, suggesting a slightly worse fit.
+Conclusion
+
+Best Model: The model with age as a predictor (mod.coxph.base.age) has the lowest AIC value (774.54), indicating it provides the best fit among the three models.
+Base Model Improvement: Adding age to the base model significantly improves the fit, as evidenced by the decrease in AIC from 780.74 to 774.54.
+
+Adding the age and gender interaction term does not improve the fit further; instead, it slightly increases the AIC to 776.07, indicating that the interaction term does not contribute positively to the model fit.
+Based on the AIC values, the model including age without the interaction term is the preferred model.
+
+#Q5 For the model that includes age as a predictor, evaluate whether the key assumptions of the Cox proportional hazards (Cox PH) modeling approach are satisfied. Provide a detailed analysis using appropriate diagnostic tests and plots and explain whether the results support the credibility of the model.?
+# Load necessary library
+# Fit Cox proportional hazards model with age included
+# Test the proportional hazards assumption
+# Print the test results
+# Set up the graphics layout to display 9 plots in a 3x3 grid
+# Plot the Schoenfeld residuals to check proportional hazards assumption
+# Reset the graphics layout
+```{r}
+cox.zph(mod.coxph.base.age)
+par(mfrow=c(3,3))
+plot(cox.zph(mod.coxph.base.age))
+```
+
+###Interpretation
+
+1. Random Distribution; If the residuals are scattered randomly around the axis it means that the assumption of hazards holds true, for that predictor.
+2. Patterns or Trends; If there is a trend or pattern it could indicate a violation of the proportional hazards assumption for that predictor.
+
+Interpretation of Each Category;
+
+ Gender; The residuals are randomly scattered around the axis suggesting that the proportional hazards assumption is valid for gender.
+
+ Race; The residuals for race show scattering with no trend indicating that the assumption is likely valid.
+
+ Employment; The residuals for employment exhibit mostly random scattering with a slight pattern implying a need for closer examination despite generally meeting the assumption.
+ 
+ Years Smoking; The residualsre scattered, supporting the validity of the proportional hazards assumption for years of smoking.
+ 
+ Level of Smoking; The residuals display random scattering confirming that the proportional hazards assumption is valid for smoking level.
+ 
+ Prior Attempts; The residuals align along a line, at zero signifying no violation of the hazards assumption.
+ 
+ No Smoke; The residuals show scattering indicating that the proportional hazards assumption holds true for periods without smoking.
+
+Age;
+The scatter plot of residuals, for age appears to be distributed without any pattern suggesting that the assumption of proportional hazards holds true for age.
+
+In summary based on the Schoenfeld residuals plots it seems that most predictors in the model adhere well to the hazards assumption. However there is a trend observed in the employment predictor warranting investigation to confirm compliance with the assumption. In general there are no breaches of the proportional hazards assumption evident, in these plots.
+
+###Q6Reflection: Reflect on the process of building and evaluating Cox proportional hazards models in this assignment. Discuss the challenges you encountered and the insights you gained. How do these experiences influence your understanding of survival analysis and its application in real-world scenarios?
+Data Preparation:
+
+Ensuring that the data was properly formatted for survival analysis, including correctly specifying the time-to-event and event indicator variables, was critical. Any errors here could lead to incorrect model outputs.
+Model Selection:
+
+Deciding which variables to include in the model was challenging. This required balancing model complexity with interpretability and considering the potential impact of each variable on the outcome.
+Assumptions Checking:
+
+Verifying the proportional hazards assumption was not straightforward. Interpreting Schoenfeld residuals plots and understanding the statistical tests required careful attention and a solid grasp of the underlying theory.
+Interaction Terms:
+
+Including interaction terms (like age and gender) added complexity to the model. Interpreting the coefficients of interaction terms and understanding their impact on the model required a deeper understanding of the relationships between variables.
+Model Comparison:
+
+Using criteria like AIC for model comparison was useful but interpreting these values and deciding on the best model involved careful consideration of both statistical significance and practical relevance.
+Insights Gained
+
+Importance of Assumptions:
+
+Ensuring that the proportional hazards assumption holds is crucial for the validity of the Cox model. This exercise highlighted the importance of checking assumptions and the potential consequences of assumption violations.
+Model Interpretation:
+
+Building and evaluating these models improved my ability to interpret the coefficients, hazard ratios, and significance levels. This is essential for drawing meaningful conclusions from survival analysis.
+Complexity vs. Simplicity:
+
+More complex models are not always better. Adding more variables or interaction terms can improve fit but may also lead to overfitting. Finding the right balance is key.
+Real-World Application:
+
+Survival analysis and Cox models are powerful tools for understanding time-to-event data. This experience reinforced their applicability in various fields like medicine, engineering, and social sciences, where predicting the timing of events is crucial.
+Practical Challenges:
+
+Real-world data often comes with issues like missing values, censored data, and non-proportional hazards. Handling these challenges effectively is essential for accurate survival analysis.
+Influence on Understanding of Survival Analysis
+
+This assignment has deepened my understanding of survival analysis, particularly the application and interpretation of Cox proportional hazards models. The process of building and evaluating these models has highlighted the importance of careful data preparation, rigorous assumption checking, and thoughtful model selection. It has also underscored the value of these models in providing insights into time-to-event data, which is essential for making informed decisions in many real-world scenarios.
+
+Overall, this experience has equipped me with the skills to effectively apply survival analysis techniques and interpret their results, enhancing my ability to contribute to research and practical applications in various fields.
