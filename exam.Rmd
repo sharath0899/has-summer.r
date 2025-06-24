@@ -1,0 +1,781 @@
+---
+title: "Exam"
+author: "sharath kasula"
+date: "2024-07-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Load the 'survival' package, which contains the 'pbc' dataset and functions for survival analysis
+# Load the 'pbc' dataset into the R environment
+# Display a summary of the 'pbc' dataset to understand the distribution and statistics of each variable
+# Access the documentation for the 'pbc' dataset to get detailed information about its context and variables
+summary(pbc)
+```{r}
+library(survival)
+data(pbc)
+summary(pbc)
+?pbc
+```
+
+###1 Use the code below for converting a couple of variables into factors, from their original type. What is the purpose behind these conversions? Base you answer in the contextual information related to the dataset.
+# Remove rows with missing values and exclude the first column (ID) from the 'pbc' dataset
+# Convert the 'status' variable to a factor
+# Convert the 'ascites' variable to a factor
+# Convert the 'hepato' variable to a factor
+# Convert the 'stage' variable to a factor (ordinal/rank)
+# Display a summary of the modified 'my.pbc' dataset
+```{r}
+my.pbc <- na.omit(pbc[, -1])
+my.pbc$status <- as.factor(my.pbc$status)
+my.pbc$ascites <- as.factor(my.pbc$ascites)
+my.pbc$hepato <- as.factor(my.pbc$hepato)
+my.pbc$stage <- as.factor(my.pbc$stage)
+summary(my.pbc)
+
+```
+###Interpretation
+At the time of registration there is a span of 41 to 4556 days until the end of follow up. The median time is 1788 days, with an average of 1979 days showing a distribution towards the right.
+
+Regarding status patients are categorized as censored (147 cases) transplant recipients (18 cases) or deceased (111 cases) at the studys conclusion.
+
+The treatment groups consist of D penicillamine (Group 1) and placebo (Group 2) with a representation in the placebo group based on an average value of 1.507.
+
+Patients ages range from 26.28 to 78.44 years with an mean age to each other at around 49.71 and 49.80 years respectively indicating a relatively normal age distribution.
+
+In terms of gender representation there are patients (242) than male patients (34), in the dataset.
+
+The presence or absence of ascites is indicated by a variable; most patients do not have ascites (257 cases) while some do have it (19 cases).
+
+Regarding hepatomegaly
+The binary variable, in question indicates whether hepatomegaly is present (1) or absent (0). Out of the patients 134 do not have hepatomegaly while 142 do.
+
+Regarding spider angiomas the binary variable signifies their presence (1) or absence (0). A majority of patients about 72.11% do not exhibit spider angiomas on average with a value of 0.2899.
+
+In terms of edema the binary variable distinguishes its presence (1) or absence (0). On average most patients. 10.69%. Do not display edema.
+
+Moving on to serum bilirubin levels measured as a variable in mg/dl. The range spans from 0.3 to 28.0 with a value of 1.4 and an average of 3.334 indicating that some patients show elevated bilirubin levels.
+
+For serum cholesterol levels measured continuously in mg/dl; values vary from 120 to 1775 with a value of 310 and an average of 371.3 showcasing diversity in cholesterol levels.
+
+As for serum albumin levels measured continuously in g/dl; values range from 1.96 to 4.4 with a value of 3.545 and an average of 3.517. Depicting a standard distribution pattern.
+
+Lastly urine copper levels are quantified as a variable in, ug/day.
+The values vary between 4 and 588 with a point of 74 and an average of 100.77 suggesting that some patients exhibit copper levels.
+
+alk.phos; This continuous measure represents alkaline phosphatase levels (U/liter). The values range from 289, to 13862.4 with a point of 1277.5 and an average of 1996.6 indicating diversity in readings and potential extreme values.
+
+ast; This continuous measure indicates aspartate aminotransferase levels (U/ml). The values range from 28.38 to 457.25 with a point of 116.62 and an average of 124.12 demonstrating some variability in enzyme concentrations.
+
+trig; This continuous measure signifies levels (mg/dl). The values range from 33 to 598 with a point of 108 and an average of 125 suggesting a level of diversity.
+
+platelet; This continuous measure represents platelet count (1000s/cu mm). The values range from 62, to 563 with a point of
+257 and an average of
+261.8 indicating a distribution that's relatively standard.
+
+protime; This continuous measure indicates time (seconds). The values range from
+9.00 to
+17.10 
+with a value
+of 
+10.
+60 
+and value 
+of 
+10.
+74 
+displaying slight variability.
+
+stage; This ordinal category denotes the disease stage as either stage
+1 
+2 
+3 
+or 
+4.
+Most of the patients fall into stage 3 or 4 while there are patients, in stages 1 and 2.
+###2a.Execute the code below associated with excluding trt, time, and status from the dataframe to produce a reduced version of the dataset represented by the data frame object labeled my.pbc.
+# Create a reduced dataset by excluding the first three columns (trt, time, and status) from 'my.pbc'
+# Display a summary of the reduced 'my.reduced.pbc' dataset
+```{r}
+my.reduced.pbc <- my.pbc[, -c(1:3)]
+summary(my.reduced.pbc)
+
+```
+###Interpretation
+The patients ages range from 26.28, to 78.44 years with an age of 49.71 years and an average age of 49.80 years indicating a balanced distribution around the middle value.
+
+In the dataset there are 34 males and 242 females showing a representation of patients.
+
+Regarding ascites it is noted that 257 patients do not exhibit ascites (coded as 0) while 19 patients have ascites (coded as 1) suggesting that this condition is less common among the patients.
+
+The binary variable related to hepatomegaly reveals that out of the participants 134 do not have hepatomegaly (coded as 0) and 142 do have hepatomegaly (coded as 1) indicating an equal division between these two groups.
+
+In terms of spider angiomas presence indicated by another variable, most patients ( 71%) are, without spider angiomas (mean = 0.2899).
+
+Lastly concerning edema presence shown in another variable the majority of patients (about 89.3%) do not exhibit edema (mean = 0.1069).Serum bilirubin levels can vary widely ranging from 0.3 to 28.0 mg/dL with a value of 1.4 mg/dL and an average of 3.334 mg/dL. The higher average suggests that some patients may have notably elevated bilirubin levels.
+
+When it comes to serum cholesterol the levels span from 120 to 1775 mg/dL with a level of 310 mg/dL and an average of 371.3 mg/dL. This wide range indicates diversity, among patients in terms of cholesterol levels.
+
+For serum albumin levels the range falls between 1.96 and 4.4 g/dL with a value of 3.545 g/dL and an average of 3.517 g/dL. These values are distributed evenly around the mean.
+
+In terms of urine copper levels they can range from 4 to 588 µg/day with a level of 74 µg/day and an average daily level of 100.77 µg/day. The higher average suggests that certain patients may have elevated copper levels.
+
+Regarding alkaline phosphatase levels they vary significantly from person, to person ranging from low as 289 U/L to high as13862.4 U/L with a median level at1277.5 U/. An average at1996.6 U/L. These extreme values hint at some patients having enzyme levels.
+AST levels typically fall between 28.38 to 457.25 U/L with a median, around 116.62 U/L and an average of 124.12 U/L showing some variation but generally aligning with liver function test ranges.
+
+When it comes to triglycerides the levels span from 33 to 598 mg/dL with a value of 108 mg/dL and an average of approximately 125 mg/dL pointing towards moderate variability in distribution.
+
+Platelet counts range from 62 to 563 (1000s/cu mm) with a median at around 257 and an average of 261.8 indicating a standard distribution centered around the mean value.
+
+In terms of time the range is typically between 9.00 to 17.10 seconds with a value around 10.60 seconds and an average of approximately 10.74 seconds showcasing slight differences in blood clotting times among patients.
+
+Regarding the disease stage variable; stage categories include stage one (12 patients) stage two (59 patients) stage three (111 patients) and stage four (94 patients). The majority of individuals seem to be in stages three and four suggesting that most cases are at disease stages, within this sample group.
+
+###2b What would be a suitable model to predict presence of hepatomegaly or enlarged liver using age, sex, albumin, alk.phos , ast, and  biliin using the reduced version of the dataset (represented by the dataframe object with the label my.reduced.pbc)? Explain the rationale behind the specific modeling approach you have choose, based on the measurement type of the outcome variable.
+Rationale for Using Logistic Regression
+Binary Outcome Variable:
+
+The outcome variable hepato is binary, indicating the presence (1) or absence (0) of hepatomegaly. Logistic regression is specifically designed for binary outcome variables, modeling the probability that a given outcome occurs.
+Interpretability:
+
+Logistic regression provides coefficients that can be interpreted as log-odds, which can be exponentiated to yield odds ratios. This makes it straightforward to understand the effect of each predictor on the likelihood of having hepatomegaly.
+Flexibility:
+
+Logistic regression can handle both continuous (e.g., age, albumin, alk.phos, ast, bili) and categorical predictors (e.g., sex), making it well-suited for the mix of variable types in this dataset.
+Model Assumptions:
+
+Logistic regression makes fewer assumptions compared to other models, such as linear discriminant analysis, which requires normally distributed predictors. Logistic regression only assumes that the logit of the probability is a linear combination of the predictor variables.
+Diagnostics and Validation:
+
+There are well-established methods for assessing the fit and diagnostics of logistic regression models, such as the Hosmer-Lemeshow test, ROC curves, and confusion matrices. These tools help ensure the model is valid and reliable.
+
+#Building the Logistic Regression Model
+# Load necessary packages
+# for diagnostic plots
+# Build the logistic regression model
+# Summarize the model to see the coefficients and significance levels
+```{r}
+
+library(car)
+
+model <- glm(hepato ~ age + sex + albumin + alk.phos + ast + bili, data = my.reduced.pbc, family = binomial)
+
+summary(model)
+
+```
+###Interpretation
+Model Coefficients and Statistical Significance
+
+(Intercept); The estimated starting point is 3.895, with a margin of error of 1.846. This finding is statistically significant (p = 0.03491) suggesting that when all other factors are zero the chances of having hepatomegaly are significantly different from zero.
+
+age; The estimate for age is 0.0001463 with a margin of error of 0.01331. This particular factor does not show significance (p = 0.99123) indicating that age does not play a role in the likelihood of having hepatomegaly according to this model.
+
+sex; The estimate for sex (coded as female) is 0.4393 with a margin of error of 0.4052. This element also lacks significance (p = 0.27835) suggesting that gender does not have an impact on the chances of developing hepatomegaly.
+
+albumin; The estimated effect for albumin is 1.127 with a margin of error of 0.3788.This coefficient shows significance (p = 0.00293) implying that higher levels of albumin are linked to odds of experiencing hepatomegaly.In terms as albumin levels increase by one unit the likelihood decreases by 1.127 log odds.
+
+alk.phos; The estimate for alkaline phosphatase is 0·0000845, with a margin or error or approximately...The data shows that there is no evidence to suggest that alk.phos levels impact the likelihood of hepatomegaly as the p value is 0.18851.
+
+Regarding aspartate aminotransferase (ast) the estimate is 0.000897, with an error of 0.002672. The data indicates that ast does not have an effect on the odds of having hepatomegaly with a p value of 0.73709.
+
+On the hand bilirubin has an estimated coefficient of 0.1600 with an error of 0.05138 and a statistically significant p value of 0.00184. This suggests that higher bilirubin levels are linked to increased odds of hepatomegaly with each unit increase in bilirubin corresponding to a log odds increase of 0.1600.
+
+In terms of model fit and diagnostics the null deviance stands at 382.39 on 275 degrees of freedom serving as a baseline for comparison without predictors.
+
+The residual deviance measures at 340.36 on 269 degrees of freedom for the fitted model with predictors included, indicating an improved fit compared to the model.
+
+The AIC value is noted at 354.36 used for model comparison where lower values signify fit, amongst models.
+
+Lastly there were five Fisher Scoring iterations made during analysis.
+The number of iterations required to reach the model is indicated.
+
+In this regression analysis, albumin and bilirubin emerge as factors in predicting hepatomegaly. Specifically higher albumin levels are linked to reduced odds whereas elevated bilirubin levels are associated with increased odds of hepatomegaly. Age, gender, alkaline phosphatase and aspartate aminotransferase do not exhibit impacts, on the likelihood of hepatomegaly, in this dataset.
+#Model Evaluation and Diagnostics
+# Install the pROC package if it's not already installed
+# Load necessary packages
+# Build the logistic regression model
+# Summarize the model to see the coefficients and significance levels
+# Model evaluation
+# Predicted probabilities
+# Convert probabilities to binary predictions (e.g., using 0.5 as a cutoff)
+# Confusion matrix
+# ROC curve
+# Area Under the Curve (AUC)
+```{r}
+if (!requireNamespace("pROC", quietly = TRUE)) {
+    install.packages("pROC")
+}
+
+library(car)
+library(pROC)
+
+model <- glm(hepato ~ age + sex + albumin + alk.phos + ast + bili, data = my.reduced.pbc, family = binomial)
+
+summary(model)
+
+predicted_probabilities <- predict(model, type = "response")
+
+predicted_classes <- ifelse(predicted_probabilities > 0.5, 1, 0)
+
+confusion_matrix <- table(predicted_classes, my.reduced.pbc$hepato)
+print(confusion_matrix)
+
+roc_curve <- roc(my.reduced.pbc$hepato, predicted_probabilities)
+plot(roc_curve, main = "ROC Curve for Logistic Regression Model")
+
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
+
+```
+###Interpretation
+Logistic Regression Model
+
+Significant Predictors:
+Albumin: Higher levels reduce the odds of hepatomegaly (p = 0.00293).
+Bilirubin: Higher levels increase the odds of hepatomegaly (p = 0.00184).
+Non-Significant Predictors: Age, sex, alkaline phosphatase (alk.phos), aspartate aminotransferase (ast).
+Model Fit
+
+Residual Deviance: 340.36 (improved fit from the null deviance of 382.39).
+AIC: 354.36 (lower values indicate better fit).
+Confusion Matrix
+
+True Negatives (correctly predicted no hepatomegaly): 102
+False Positives (incorrectly predicted hepatomegaly): 58
+False Negatives (incorrectly predicted no hepatomegaly): 32
+True Positives (correctly predicted hepatomegaly): 84
+ROC Curve
+
+AUC: 0.739
+Indicates good model performance in distinguishing between patients with and without hepatomegaly.
+Overall, the model is effective in predicting hepatomegaly with significant contributions from albumin and bilirubin levels, and it demonstrates a good ability to discriminate between cases with an AUC of 0.739.
+
+###2c. Purpose Behind Excluding the Variables trt, time, and status
+#Why Exclude trt, time, and status?
+
+Redundancy and Multicollinearity:
+Treatment (trt): This variable indicates the treatment group (D-penicillamine or placebo). Including it could introduce redundancy or multicollinearity if the treatment does not significantly influence the presence of hepatomegaly directly.
+Time (time): This variable represents the time until the end of follow-up or event occurrence. It might be more relevant in a survival analysis context rather than predicting hepatomegaly presence at a specific time.
+Status (status): This variable indicates the patient’s survival status (censored, transplant, dead). Including it could lead to multicollinearity because it may be highly correlated with the outcome of interest (hepatomegaly), and it may introduce bias.
+#What is Gained by Excluding These Variables?
+
+Simplicity:
+
+By excluding these variables, the model becomes simpler and more interpretable. It focuses on the primary predictors (age, sex, albumin, alk.phos, ast, bili) directly related to the outcome (hepatomegaly).
+Reduced Multicollinearity:
+
+Removing potentially collinear variables helps to ensure that the estimated coefficients are more stable and reliable. Multicollinearity can inflate standard errors, making it harder to determine the significance of predictors.
+Avoidance of Overfitting:
+
+Excluding unnecessary predictors helps prevent overfitting, where the model captures noise rather than the underlying pattern. This improves the model’s generalizability to new data.
+Consequences of Retaining These Variables as Predictors
+
+Multicollinearity:
+
+Including trt, time, and status could introduce multicollinearity. For example, status is likely correlated with disease progression indicators like albumin or bili, leading to inflated standard errors and less reliable coefficient estimates.
+Model Overcomplication:
+
+Adding these variables could make the model unnecessarily complex without providing additional explanatory power for the specific outcome of interest (hepatomegaly). This can make the model harder to interpret and less practical.
+Bias and Misleading Results:
+
+status includes information about survival, which might confound the relationship between other predictors and hepatomegaly. Including it could bias the results, as it mixes the predictors of hepatomegaly with those of overall survival or transplant status.
+Inappropriate Focus:
+
+The inclusion of time and status is more appropriate for survival analysis (e.g., Cox proportional hazards model) rather than logistic regression for predicting hepatomegaly presence. Including them in this context shifts the focus away from the direct predictors of hepatomegaly.
+Conclusion
+Excluding trt, time, and status from the model helps maintain simplicity, reduce multicollinearity, avoid overfitting, and ensure the focus remains on the direct predictors of hepatomegaly. Including these variables could complicate the model, introduce bias, and lead to less reliable and interpretable results.
+###3 Based on your answer for Q2 b, using my.reduced.pbc dataframe , build a model to predict hepato using age, sex, albumin, alk.phos , ast, and  biliin
+# Build the logistic regression model to predict the presence of hepatomegaly
+# using age, sex, albumin, alkaline phosphatase (alk.phos), aspartate aminotransferase (ast), and bilirubin (bili) as predictors
+# Display a summary of the logistic regression model
+# This summary provides estimates of the coefficients, standard errors, z-values, and p-values
+```{r}
+model <- glm(hepato ~ age + sex + albumin + alk.phos + ast + bili, data = my.reduced.pbc, family = binomial)
+summary(model)
+```
+###Interpretation
+Model. Statistical Significance
+
+Initial Value; The starting point is estimated at 3.895 with a margin of error of 1.846 showing significance (p = 0.03491). This suggests that, under conditions the base likelihood of hepatomegaly is positive and distinctly different from zero.
+
+Age Factor; The impact of age is Estimate = 0.0001463). Lacks statistical significance (p = 0.99123). This implies that age doesn't notably influence the likelihood of hepatomegaly.
+
+Gender Influence; The effect of gender (female)'s 0.4393 with a margin of error at 0.4052 without significance (p = 0.27835). This indicates that being female doesn't significantly alter the odds of hepatomegaly compared to males.
+
+Albumin Levels; The impact of albumin stands at 1.127 with a margin of error at 0.3788 showing significance (p = 0.00293). This suggests that higher albumin levels are linked to chances of hepatomegaly. Specifically for every increase in level by one unit the likelihood of having hepatomegaly decreases by 1.127 in log odds.
+
+Alkaline Phosphatase Influence; The influence from alkaline phosphatase stands at 0.0000845 with a margin or error, at 0..00006426 lacking significance (p = 0..18851).
+It seems that the levels of alkaline phosphatase do not play a role, in influencing the likelihood of hepatomegaly.
+
+In terms of aspartate aminotransferase the coefficient is 0.000897 with an error of 0.002672. It is not deemed statistically significant (p = 0.73709). This implies that aspartate aminotransferase levels do not have an impact on the chances of hepatomegaly.
+
+Regarding bilirubin the coefficient stands at 0.1600 with an error of 0.05138. It is statistically significant (p = 0.00184). This suggests that higher bilirubin levels are linked to increased odds of hepatomegaly. Specifically for each increment in bilirubin level by one unit there is an increase in log odds by 0.1600.
+
+Model Fit and Diagnostic Measures
+
+The null deviance value of 382.39 on 275 degrees of freedom serves as a baseline to assess model fit when only considering the intercept.
+
+On the hand the residual deviance value stands at 340.36 on 269 degrees of freedom when all predictors are included in the fitted model. The decrease in deviance from deviance indicates that including predictors enhances model fit relative, to using an intercept.
+
+The AIC (Akaike Information Criterion) value is recorded at 354.36. Serves for comparing models, where lower values reflect fit compared to other models.
+
+The number of Fisher Scoring iterations conducted was five.
+The number of iterations needed to reach the model is shown here.
+
+In this regression analysis, albumin and bilirubin play roles in predicting hepatomegaly. Higher albumin levels are linked to chances of hepatomegaly while higher bilirubin levels are associated with increased odds of hepatomegaly. Factors, like age, gender, alkaline phosphatase and aspartate aminotransferase do not significantly predict hepatomegaly in this model. The model seems to fit the data based on the decrease, in deviance and the AIC value.
+
+###3a What are the significant predictors?
+
+The key factors identified in the regression model to predict hepatomegaly are;
+
+Albumin;
+
+ Estimate; 1.127
+ p value; 0.00293
+ Explanation; Higher albumin levels are associated with a decreased likelihood of hepatomegaly.
+Bilirubin;
+
+ Estimate; 0.1600
+ p value; 0.00184
+ Explanation; Higher bilirubin levels are linked to an increased likelihood of hepatomegaly.
+These predictors stand out as their p values fall below 0.05 indicating evidence of a connection, between albumin and bilirubin levels and the occurrence of hepatomegaly.
+
+###3b Using this model, interpret the odds ratio of serum bilirunbin (mg/dl) and presence of hepatomegaly or enlarged liver.
+
+To interpret the odds ratio for serum bilirubin in the context of predicting the presence of hepatomegaly (enlarged liver), we can exponentiate the estimated coefficient for bilirubin from the logistic regression model.
+The estimated coefficient for bilirubin is 0.1600. The odds ratio (OR) can be calculated as:
+
+OR=exp(coefficient)=exp(0.1600)
+```{r}
+odds_ratio_bilirubin <- exp(0.1600)
+print(odds_ratio_bilirubin)
+
+```
+###Interpretation
+When the serum bilirubin level increases, by one unit (mg/dL) the odds of developing hepatomegaly ( liver) go up by around 17.3%. This suggests that higher bilirubin levels are linked to a probability of hepatomegaly.
+
+In words if a patients bilirubin level rises by 1 mg/dL their likelihood of having a liver increases, by 17.3%.
+
+###4 For the model constructed in Q3, perform the needed key diagnostics and interpret the results of the model based on what you find here.
+# Set a CRAN mirror
+# Install the package
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+install.packages("ResourceSelection")
+
+```
+
+```{r}
+library(ResourceSelection)
+```
+# Install the ResourceSelection package if it's not already installed
+# Load necessary packages
+# Build the logistic regression model
+# Summary of the model
+# Residuals analysis
+# Hosmer-Lemeshow test
+# Multicollinearity check using VIF
+# Influence diagnostics using Cook's distance
+# ROC curve and AUC
+```{r}
+if (!requireNamespace("ResourceSelection", quietly = TRUE)) {
+    install.packages("ResourceSelection")
+}
+
+library(pROC)
+library(car)
+
+model <- glm(hepato ~ age + sex + albumin + alk.phos + ast + bili, data = my.reduced.pbc, family = binomial)
+
+summary(model)
+
+par(mfrow = c(2, 2))
+plot(model)
+
+hl_test <- hoslem.test(my.reduced.pbc$hepato, fitted(model))
+print(hl_test)
+
+vif_values <- vif(model)
+print(vif_values)
+
+cooksd <- cooks.distance(model)
+plot(cooksd, type = "h", main = "Cook's Distance", ylab = "Cook's distance")
+abline(h = 4/(nrow(my.reduced.pbc)-length(model$coefficients)-2), col = "red")
+
+roc_curve <- roc(my.reduced.pbc$hepato, predict(model, type = "response"))
+plot(roc_curve, main = "ROC Curve for Logistic Regression Model")
+auc_value <- auc(roc_curve)
+print(paste("AUC:", auc_value))
+```
+###Interpretation
+Logistic Regression Model Summary
+
+The logistic regression model was created to predict whether a patient has hepatomegaly (enlarged liver) using age, sex, albumin, alkaline phosphatase (alk.phos), aspartate aminotransferase (ast), and bilirubin (bili).
+
+Significant Predictors:
+Albumin: Higher levels decrease the chances of having hepatomegaly (p = 0.00293).
+Bilirubin: Higher levels increase the chances of having hepatomegaly (p = 0.00184).
+Not Significant:
+Age (p = 0.99123)
+Sex (female) (p = 0.27835)
+Alkaline Phosphatase (alk.phos) (p = 0.18851)
+Aspartate Aminotransferase (ast) (p = 0.73709)
+Model Fit Statistics
+
+Null deviance: 382.39
+Residual deviance: 340.36
+AIC: 354.36
+Iterations: 5
+Diagnostic Plots Interpretation
+Residuals vs Fitted Plot:
+
+The points are randomly scattered, which means the model fits well.
+Q-Q Plot of Residuals:
+
+The points mostly follow a straight line, suggesting the residuals are normally distributed.
+Scale-Location Plot:
+
+The points are evenly spread out, indicating that the variance is constant.
+Residuals vs Leverage Plot:
+
+No points are far from the rest, suggesting no data points are overly influencing the model.
+Cook's Distance Plot:
+
+Most points have low values, indicating no single observation is unduly affecting the model.
+Goodness-of-Fit Test
+Hosmer-Lemeshow Test: The p-value is less than 0.001, indicating the model's predictions don't perfectly match the observed data.
+Multicollinearity Check
+Variance Inflation Factor (VIF):
+All VIF values are below 10, which means there's no significant multicollinearity (no predictors are highly correlated with each other).
+ROC Curve and AUC
+AUC: 0.739 - This indicates the model does a good job distinguishing between patients with and without hepatomegaly.
+Summary
+Important Predictors: Albumin and bilirubin are important for predicting hepatomegaly.
+Model Fit: Residuals look good, but the Hosmer-Lemeshow test suggests some mismatch between predicted and observed values.
+No Multicollinearity: Predictors are not highly correlated with each other.
+No Single Influential Points: No single data point is overly affecting the model.
+Good Discrimination: The model is good at distinguishing between those with and without hepatomegaly, shown by the AUC of 0.739.
+In summary, the model works well, especially with albumin and bilirubin as key predictors, but there's some room for improvement based on the goodness-of-fit test.
+
+####5 Next, use the code below and go back to using my.pbc. Add a new variable to represent two states of status: the original status values of 0 and 1 are mapped to a 0 and the original value of 2 onto a 1. In the R code, this new variable is labeled newstatus. What purpose would be served by combining the original 0 (censored) and 1 (transplant) into a single category, and the original 2 (dead) into another single category? (Hint: consider what you would need for status, if your goal is to model survival/non-survival). What is lost when combining the original 0 and 1 categories into a single new category? How will this affect the interpretation of the results?
+
+# Create a new variable 'newstatus' to represent survival/non-survival
+# Remove the original 'status' variable from the dataset
+# Display the summary of the updated dataset
+```{r}
+my.pbc$newstatus <- as.numeric(ifelse(my.pbc$status == 2, 1, 0))
+my.pbc <- my.pbc[, -2]
+summary(my.pbc)
+```
+###Interpretation
+The summary statistics provide an overview of the dataset my.pbc after adding the newstatus variable and removing the original status variable.
+
+time: The time (in days) from the start of the study to the endpoint ranges from 41 to 4556 days, with a median of 1788 days. The mean time is 1979 days, indicating that the follow-up period is generally around 5.4 years.
+
+trt: This variable indicates the treatment group: 1 (D-penicillamine) or 2 (placebo). The treatment distribution is roughly balanced, with a mean of 1.507, indicating a slight lean towards the placebo group.
+
+age: The age of patients ranges from 26.28 to 78.44 years, with a median age of 49.71 years. The mean age is 49.80 years, suggesting a middle-aged population.
+
+sex: The dataset contains 34 males (m) and 242 females (f), indicating a higher proportion of female patients.
+
+ascites: This binary variable indicates the presence (1) or absence (0) of ascites. Most patients (257) do not have ascites, while 19 do.
+
+hepato: This binary variable indicates the presence (1) or absence (0) of hepatomegaly. There are 134 patients without hepatomegaly and 142 with hepatomegaly, showing a nearly equal split.
+
+spiders: This binary variable indicates the presence of spider angiomas. The mean value is 0.2899, indicating that around 29% of patients have spider angiomas.
+
+edema: This binary variable indicates the presence of edema. The mean value is 0.1069, indicating that around 11% of patients have edema.
+
+bili: This continuous variable measures serum bilirubin levels (mg/dL). The values range from 0.3 to 28.0, with a median of 1.4 and a mean of 3.334, showing that some patients have significantly elevated bilirubin levels.
+
+chol: This continuous variable measures serum cholesterol levels (mg/dL). The values range from 120 to 1775, with a median of 310 and a mean of 371.3, indicating variability in cholesterol levels among patients.
+
+albumin: This continuous variable measures serum albumin levels (g/dL). The values range from 1.96 to 4.4, with a median of 3.545 and a mean of 3.517, suggesting a relatively normal distribution around the central value.
+
+copper: This continuous variable measures urine copper levels (ug/day). The values range from 4 to 588, with a median of 74 and a mean of 100.77, indicating some patients have higher copper levels.
+
+alk.phos: This continuous variable measures alkaline phosphatase levels (U/L). The values range from 289 to 13862.4, with a median of 1277.5 and a mean of 1996.6, showing significant variability and potential outliers.
+
+ast: This continuous variable measures aspartate aminotransferase levels (U/mL). The values range from 28.38 to 457.25, with a median of 116.62 and a mean of 124.12, indicating some variability.
+
+trig: This continuous variable measures triglycerides levels (mg/dL). The values range from 33 to 598, with a median of 108 and a mean of 125, indicating moderate variability.
+
+platelet: This continuous variable measures platelet count (1000s/cu mm). The values range from 62 to 563, with a median of 257 and a mean of 261.8, suggesting a relatively normal distribution around the mean.
+
+protime: This continuous variable measures prothrombin time (seconds). The values range from 9.00 to 17.10, with a median of 10.60 and a mean of 10.74, indicating slight variability in blood clotting times among patients.
+
+stage: This ordinal variable indicates the stage of the disease: stage 1 (12 patients), stage 2 (59 patients), stage 3 (111 patients), and stage 4 (94 patients). Most patients are in stages 3 and 4, indicating more advanced disease.
+
+newstatus: This new binary variable indicates survival status, where 0 represents alive (combining the original status values 0 and 1) and 1 represents dead (original status value 2). The mean value is 0.4022, indicating that about 40.2% of the patients are dead, while the remaining 59.8% are alive.
+
+The dataset provides a detailed overview of patients' clinical and demographic characteristics, focusing on various health indicators and disease stages. The addition of the newstatus variable simplifies survival analysis by consolidating survival outcomes into two categories: alive and dead. This helps focus the analysis on survival versus non-survival, facilitating clearer insights into the factors influencing patient outcomes.
+
+###6 Fit a CoxPH model to predict the hazard function of newstatus using age+sex+albumin+alk.phos+ast+bili . Identify significant predictors?
+
+# Load necessary package
+# Fit the Cox Proportional Hazards model
+# Display the summary of the model
+```{r}
+if (!requireNamespace("survival", quietly = TRUE)) {
+    install.packages("survival")
+}
+library(survival)
+
+cox_model <- coxph(Surv(time, newstatus) ~ age + sex + albumin + alk.phos + ast + bili, data = my.pbc)
+
+summary(cox_model)
+
+```
+###Interpretation
+The Cox Proportional Hazards model was fitted to predict the hazard function (risk of death) using age, sex, albumin, alkaline phosphatase (alk.phos), aspartate aminotransferase (ast), and bilirubin (bili) as predictors.
+
+Summary of the Model
+
+Significant Predictors:
+
+Age:
+
+Coefficient: 0.03817
+Hazard Ratio (exp(coef)): 1.0389
+p-value: 0.000293
+Interpretation: For each additional year of age, the risk of death increases by approximately 3.89%. This is a significant predictor of survival.
+Albumin:
+
+Coefficient: -1.324
+Hazard Ratio (exp(coef)): 0.2661
+p-value: 1.67e-07
+Interpretation: Higher levels of albumin are associated with a lower risk of death. Specifically, for each unit increase in albumin, the risk of death decreases by about 73.39% (since 1 - 0.2661 = 0.7339). This is a significant predictor.
+Bilirubin (bili):
+
+Coefficient: 0.1238
+Hazard Ratio (exp(coef)): 1.1318
+p-value: 9.32e-15
+Interpretation: Higher levels of bilirubin are associated with a higher risk of death. For each unit increase in bilirubin, the risk of death increases by approximately 13.18%. This is a highly significant predictor.
+Borderline Predictors:
+
+Sex (female):
+
+Coefficient: -0.508
+Hazard Ratio (exp(coef)): 0.6017
+p-value: 0.056322
+Interpretation: Being female is associated with a lower risk of death, but this predictor is borderline significant with a p-value just above the common threshold of 0.05.
+Aspartate Aminotransferase (ast):
+
+Coefficient: 0.002937
+Hazard Ratio (exp(coef)): 1.0029
+p-value: 0.067309
+Interpretation: Higher AST levels are associated with a slightly higher risk of death, but this predictor is borderline significant with a p-value just above the common threshold of 0.05.
+Non-Significant Predictors:
+
+Alkaline Phosphatase (alk.phos):
+Coefficient: 0.00001926
+Hazard Ratio (exp(coef)): 1.0000
+p-value: 0.598424
+Interpretation: Alkaline phosphatase levels are not significantly associated with the risk of death in this model.
+Model Fit Statistics
+
+Concordance: 0.813 (se = 0.022)
+
+Interpretation: The concordance index of 0.813 indicates that the model has good predictive accuracy. A value closer to 1 indicates better discrimination between patients who experienced the event and those who did not.
+Likelihood ratio test: 127.9 on 6 df, p < 2e-16
+
+Wald test: 146.5 on 6 df, p < 2e-16
+
+Score (logrank) test: 208.5 on 6 df, p < 2e-16
+
+Interpretation: All three tests have highly significant p-values, indicating that the model fits the data well and that the predictors collectively contribute to the model.
+Conclusion
+Significant Predictors:
+
+Age: Older age increases the risk of death.
+Albumin: Higher albumin levels decrease the risk of death.
+Bilirubin: Higher bilirubin levels increase the risk of death.
+Borderline Predictors:
+
+Sex: Being female is associated with a lower risk of death, but this is borderline significant.
+Aspartate Aminotransferase (AST): Higher AST levels slightly increase the risk of death, but this is borderline significant.
+Non-Significant Predictor:
+
+Alkaline Phosphatase (alk.phos): Not significantly associated with the risk of death.
+The model indicates that age, albumin, and bilirubin are important factors affecting survival in patients. Higher albumin levels are protective, while older age and higher bilirubin levels increase the risk of death. The model fits the data well, as indicated by the concordance index and the significant test statistics.
+
+###7 Identify the key assumption(s) associated with the CoxPH modeling approach, and explain whether it/they are satisfied, using appropriate evidence.
+
+The Cox Proportional Hazards model relies on several key assumptions:
+
+Proportional Hazards Assumption:
+
+The effect of the covariates on the hazard ratio is constant over time. This means that the ratio of the hazards for any two individuals is constant over time, regardless of how long they have been followed.
+Linearity of Continuous Variables:
+
+The relationship between continuous covariates and the log hazard is linear.
+Independence of Survival Times:
+
+The survival times of different individuals are independent of each other.
+No Interaction Between Covariates:
+
+There are no significant interactions between the covariates unless explicitly modeled.
+Checking the Proportional Hazards Assumption
+# Load necessary package
+# Fit the Cox Proportional Hazards model
+# Test proportional hazards assumption
+# Plot Schoenfeld residuals
+```{r}
+library(survival)
+
+cox_model <- coxph(Surv(time, newstatus) ~ age + sex + albumin + alk.phos + ast + bili, data = my.pbc)
+
+ph_test <- cox.zph(cox_model)
+print(ph_test)
+
+plot(ph_test)
+```
+###Interpretation
+Global Test Results;
+
+Chi value; 10.8236
+Degrees of freedom; 6
+p value; 0.094
+Conclusion; The global test, on hazards shows a non significant result (p > 0.05) indicating that overall the model supports the assumption of proportional hazards.
+
+Individual Test Results;
+
+Age;
+Chi value; 1.1820
+p value; 0.277
+Conclusion; The p value for age is not significant suggesting that the assumption of hazards holds for this variable.
+
+Sex;
+Chi squared value; 0.0364
+p value; 0.849
+Conclusion; The p value for sex is not significant indicating that the assumption of hazards holds for this variable.
+
+Albumin;
+Chi value; 0.7477
+p value; 0.387
+Conclusion; The p value for albumin is not significant supporting the assumption of hazards for this variable.
+
+Alkaline Phosphatase (alk.phos);
+Chi value; 0.9330
+p value; 0.334
+Conclusion; The p value for alkaline phosphatase is not significant suggesting that the assumption of hazards holds for this variable.
+
+Aspartate Aminotransferase (, ast);
+Chi value ; 0.5804 
+p Value ;.446 
+Interpretation ; Not significant hence we accept null hypothesis which implies aspartate aminotransferase follows proportionality assumptions.
+Bilirubin (bili);
+Chi squared; 8.2985
+p value; 0.004
+Interpretation; The p value is statistically significant suggesting that there may be issues, with the hazards assumption for bilirubin.
+Schoenfeld Residual Plots
+Visualizing the Schoenfeld plots for each variable can help determine if the proportional hazards assumption is valid. The solid line indicates the estimated effect over time while the dashed lines represent the confidence interval.
+
+Age;
+
+The solid line appears flat. The points are scattered randomly without a discernible pattern indicating that the proportional hazards assumption holds.
+Sex;
+
+The solid line shows a trend and the points are dispersed without any clear pattern suggesting that the proportional hazards assumption holds.
+Albumin;
+
+The solid line maintains a level and the points are scattered with no distinct pattern observed, implying that the proportional hazards assumption holds.
+Alkaline Phosphatase (alk.phos);
+
+The solid line displays a pattern with scattered points. No clear trend, indicating that the proportional hazards assumption holds.
+Aspartate Aminotransferase (ast);
+
+The solid line remains steady, with scattered points. No evident trend identified, suggesting that the proportional hazards assumption holds.
+
+The graph indicates that there are inconsistencies, in the data points for bilirubin suggesting that the assumption of hazards may not be valid for this variable. In summary the models overall test affirms the proportionality assumption. When tested individually bilirubin does not meet this criterion. The visual analysis of Schoenfeld plots supports these findings highlighting some deviations in bilirubin from the hazards assumption. While most factors adhere to this assumption it is essential to note that bilirubin deviates from it. This discrepancy should be taken into account when interpreting the results and may necessitate adjustments in modeling approaches like incorporating time varying coefficients, for bilirubin.
+
+###For checking the linearity of continuous variables, we can use residual plots:
+# Plot martingale residuals for continuous variables
+# Plot residuals vs each continuous covariate
+```{r}
+martingale_residuals <- residuals(cox_model, type = "martingale")
+
+par(mfrow = c(2, 3))
+plot(my.pbc$age, martingale_residuals, main = "Age")
+plot(my.pbc$albumin, martingale_residuals, main = "Albumin")
+plot(my.pbc$alk.phos, martingale_residuals, main = "Alkaline Phosphatase")
+plot(my.pbc$ast, martingale_residuals, main = "AST")
+plot(my.pbc$bili, martingale_residuals, main = "Bilirubin")
+
+```
+###Interpretation
+Proportional Hazards Assumption: Based on the cox.zph test, this assumption holds for both the model overall and for individual covariates.
+Linearity of Continuous Variables: Checking the martingale residuals plots can provide evidence for or against the linearity assumption. Random scatter around zero indicates linearity is satisfied.
+By performing these checks and interpreting the results, we can ensure that the assumptions underlying the Cox Proportional Hazards model are satisfied, leading to more reliable and valid conclusions.
+
+###Reflection questions:
+###8  Which aspects of the course material did you find most challenging, and why?
+Understanding Complex Statistical Concepts;
+
+Grasping theories and techniques such as the Cox Proportional Hazards model and its underlying assumptions proved to be quite challenging, due to the necessity of a profound comprehension of mathematical principles and their real world applications.
+
+Data Preprocessing and Cleaning;
+
+Dealing with missing data, outliers. Ensuring data integrity before analysis presented difficulties. It often involves a process that demands attention to detail to prevent biases or errors from influencing the analysis.
+
+Interpreting Model Outputs;
+
+Deciphering the outcomes of models comprehending coefficients, p values, hazard ratios and their implications in real world scenarios proved to be intricate. This understanding is vital for drawing conclusions and making decisions based on data.
+
+Assumption Checks;
+
+Verifying that the assumptions underlying models hold true (such as the hazards assumption in CoxPH models) posed challenges. It requires a grasp of diagnostic tests and plots for accurate application.
+
+Software Proficiency;
+
+Mastering statistical software tools (like R) efficiently presented its own set of challenges. This includes writing code, troubleshooting errors and utilizing functions and packages for conducting analyses and creating visualizations.
+
+Time Management;
+
+Striking a balance, between learning concepts and applying them in assignments and projects proved to be demanding. 
+It's important to manage your time to grasp and use the information. The hurdles we faced were tough. They taught us a lot improving our understanding of theory and hands on skills, in statistics and data science.
+###9 Looking forward, what areas within inferential modeling or data science do you wish to explore further? Please specify any techniques, theories, or applications you are interested in and explain how deepening your knowledge in these areas could benefit your future studies or career goals.
+
+1. Exploring Advanced Techniques, in Machine Learning
+Approaches; Delving into learning, ensemble methods and reinforcement learning.
+Purpose; These cutting edge methods are adept at managing datasets and offering valuable predictive insights. Gaining expertise in these domains will empower me to construct effective models.
+Advantage; Proficiency in these techniques is highly valued across sectors spanning from healthcare to finance presenting a wealth of career prospects.
+2. Embracing Bayesian Inference
+Approaches; Engaging with models and Markov Chain Monte Carlo (MCMC) methods.
+Reasoning; Bayesian methodologies offer a structure for modeling uncertainty and integrating knowledge, particularly beneficial in domains with limited data availability.
+Benefit; Mastery of inference can bolster my capacity to create models for research endeavors and practical implementations notably within fields like medical research and decision making processes.
+3. Immersing in Big Data Technologies
+Approaches; Familiarizing myself with Hadoop, Spark and cloud based data processing platforms.
+Rationale; Effectively managing and analyzing datasets is crucial, amidst the data era. Acquiring knowledge of these technologies will enhance my ability to handle and process large scale data efficiently.
+
+Proficiency, in data technologies is crucial for roles in data engineering and data science making me a valuable asset to organizations dealing with data. Natural Language Processing (NLP) involves techniques like text mining, sentiment analysis and language modeling. With the rise of text data from sources like media and reviews NLP techniques are increasingly vital. Acquiring skills in NLP will allow me to extract insights from text data for tasks such as customer feedback analysis, content recommendations and automated customer support. Causal inference methods such as variables, difference in differences and propensity score matching are essential for understanding relationships rather than mere correlations when making decisions based on data. Mastering these techniques will improve my ability to draw conclusions from data, which's critical for areas like policy analysis, clinical trials and economic research. Deepening knowledge in these areas will enhance problem solving skills. Enable me to address challenges, in data science more effectively.
+Expanding my career horizons; Mastering these methods will enhance my competitiveness, for job opportunities in academia, industry and government sectors.
+Progress; Enhancing my knowledge will empower me to contribute to progress in the field of data science potentially resulting in publications, patents or innovative products.
+Enhanced Decision Making; Proficiency in these methods will enable me to offer actionable insights aiding strategic decision making within organizations.
+By concentrating on these areas I can establish a base in both the theoretical and practical aspects of inferential modeling and data science. This will pave the way, for an impactful career trajectory.
+
+

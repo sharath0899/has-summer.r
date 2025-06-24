@@ -1,0 +1,504 @@
+---
+title: "week_2 assignment"
+author: "sharath kasula"
+date: "2024-06-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+# Ensure the tidymodels package is installed
+if(!require(tidymodels)) {
+  install.packages("tidymodels")
+  library (tidymodels)
+}
+
+```
+
+```{r}
+# Check if the car package is installed, if not, install it and load the library
+ if(!library("car", logical.return = TRUE)){
+   install.packages("car")
+ }
+
+library(car)
+```
+
+```{r}
+# Check if the faraway package is installed, if not, install it and load the library
+if(!library("faraway", logical.return = TRUE)){
+  install.packages("faraway")
+}
+
+library(faraway)
+```
+
+```{r}
+# Check if the performance package is installed, if not, install it and load the library
+if(!library("performance", logical.return = TRUE)){
+  install.packages("performance")
+}
+
+library(performance)
+```
+
+```{r}
+#load the diabetes dataset from the faraway package into the R environment.
+data(diabetes, package = "faraway")
+```
+
+```{r}
+#Load and summarize the datat
+require("GGally")
+data("diabetes")
+variable.names(diabetes)
+help(diabetes)
+
+diabetes <- na.omit(diabetes)[, -1] #exclude the id column
+
+summary(diabetes)
+#class(diabetes$location)
+```
+
+## Q1  Construct a linear regression model to investigate if age is a significant predictor of glyhb
+# Load necessary libraries
+# Specify a linear regression model using the tidymodels framework
+# Set the engine to "lm" (base R's linear model function)
+# Fit the linear regression model to the data
+# Use the linear regression model defined earlier
+# Fit the model using 'glyhb' as the response variable and 'age' as the predictor variable from the 'diabetes' dataset
+# Extract the underlying 'lm' model and generate a summary
+# Take the fitted model object 'lm_1'
+# Extract the underlying 'lm' model object
+# Generate a summary of the model, which includes statistical details such as coefficients, R-squared value, etc.
+```{r}
+lm_model <- 
+  linear_reg() |>
+  set_engine("lm")
+
+lm_1 <- 
+  lm_model |>
+  fit(glyhb ~ age, data = diabetes)
+
+lm_1 |>
+  extract_fit_engine() |>
+  summary()
+```
+## Interpretation
+* Coefficients: Each additional year of age increases glyhb by 0.06219 units (p-value < 0.001).
+* Intercept: When age is zero, predicted glyhb is 2.81516 (p-value < 0.001).
+* Model Fit:
+    * R-squared: 13.62%, indicating that age explains 13.62% of the variability in glyhb levels.
+    * Residual Standard Error: 2.366, showing the typical deviation of the observed values from the fitted values.
+    * F-statistic: 20.19 (p-value < 0.001), showing the model is statistically significant.
+
+
+## Q2 Add location, chol, stab.glu, hdl, and weight to the model above. Identify the significant predictors and interpret the model fitness based on the R-squared value and the F-statistic
+# Load necessary libraries
+# Specify a linear regression model using the tidymodels framework
+# Set the engine to "lm" (base R's linear model function)
+# Fit the linear regression model to the data with multiple predictors
+# Fit the model using 'glyhb' as the response variable and multiple predictors (age, location, chol, stab.glu, hdl, weight) from the 'diabetes' dataset
+# Extract the underlying 'lm' model and generate a summary
+# Take the fitted model object 'lm_2'
+# Extract the underlying 'lm' model object
+```{r}
+lm_2 <- 
+  lm_model |>
+  fit(glyhb ~ age + location + chol + stab.glu + hdl + weight, data = diabetes)
+
+lm_2 |>
+  extract_fit_engine() |>
+  summary()
+```
+##Interpretation:
+* Model: Predicting glyhb based on age, location, chol, stab.glu, hdl, and weight.
+* Coefficients:
+    * Intercept: -0.997 (not significant).
+    * age: 0.022 (significant, p = 0.0123).
+    * locationLouisa: -0.452 (marginally significant, p = 0.0689).
+    * chol: 0.011 (significant, p < 0.001).
+    * stab.glu: 0.030 (highly significant, p < 2e-16).
+    * hdl: -0.009 (not significant).
+    * weight: 0.004 (not significant).
+* Residuals: Residuals range from -3.478 to 3.926.
+* Model Fit:
+    * Residual Standard Error: 1.324.
+    * R-squared: 0.7401, indicating that the model explains 74.01% of the variance in glyhb.
+    * Adjusted R-squared: 0.7275.
+    * F-statistic: 58.39 (p < 2.2e-16), indicating the model is highly significant.
+
+
+##Q3 Add the interaction term between age and location to the model above. Explain whether this interaction is a significant predictor of glyhb and interpret the model fitness based on the R-squared value and the F-statistic.
+# Load necessary libraries
+# Define and fit the linear regression model with interaction between age and location
+# Extract and summarize the fitted model
+```{r}
+#model_3 <- lm(glyhb  ~ age : location +chol + stab.glu + hdl + weight, data = diabetes)
+lm_3 <- 
+  lm_model |>
+  fit(glyhb ~ age :location +chol + stab.glu + hdl + weight, data = diabetes)
+
+lm_3 |>
+  extract_fit_engine() |>
+  summary()
+```
+##Interaction: 
+1. Model 1 (glyhb ~ age):
+    * Coefficient for Age: Each additional year of age is associated with an average increase of 0.06219 units in glycated hemoglobin (glyhb) levels.
+    * Model Fit: Age explains around 13.62% of the variance in glyhb levels.
+2. Model 2 (glyhb ~ age + location + chol + stab.glu + hdl + weight):
+    * Significant Predictors: Cholesterol (chol) and glucose (stab.glu) levels are significantly associated with glyhb.
+    * Model Fit: This model explains approximately 74.01% of the variance in glyhb levels.
+3. Model 3 (glyhb ~ age
++ chol + stab.glu + hdl + weight):
+    * Interaction Term: Age interacts with location in predicting glyhb levels, indicating that the effect of age on glyhb may vary depending on the location.
+    * Significant Predictors: Cholesterol (chol) and glucose (stab.glu) levels remain significant predictors.
+    * Model Fit: Similar to Model 2, this model also explains around 74% of the variance in glyhb levels.
+
+##Q4 Among the three models fitted, which one provides the best fit? Use appropriate outputs such as the R-squared value and the F-statistic for your explanation. Hint: use ANOVA analysis.
+# Compare the models using ANOVA
+# anova_result <- anova(model_1, model_2, model_3)
+# print(anova_result)
+# Alternatively, directly compare the fitted models using ANOVA
+# Print the ANOVA results
+```{r}
+anova_result <- anova(lm_1$fit, lm_2$fit, lm_3$fit)
+print(anova_result)
+```
+##Interpretation:
+1. Model Comparison:
+    * Three models are compared:
+        * Model 1: glyhb ~ age
+        * Model 2: glyhb ~ age + location + chol + stab.glu + hdl + weight
+        * Model 3: glyhb ~ age
++ chol + stab.glu + hdl + weight
+2. Degrees of Freedom (Res.Df):
+    * Model 1 has 128 degrees of freedom.
+    * Model 2 and Model 3 both have 123 degrees of freedom.
+3. Residual Sum of Squares (RSS):
+    * Model 1 has an RSS of 716.82.
+    * Model 2 has an RSS of 215.64.
+    * Model 3 has an RSS of 215.74.
+4. Degrees of Freedom for Sum of Squares (Df):
+    * Model 2 has 5 additional parameters compared to Model 1.
+    * Model 3 has no additional parameters compared to Model 2.
+5. Sum of Squares (Sum of Sq):
+    * Model 2 explains significantly more variance than Model 1, as evidenced by the larger reduction in RSS (501.18).
+    * There's no significant difference in variance explained between Model 2 and Model 3, as their Sum of Sq values are similar.
+6. F-Statistic (F):
+    * The F-statistic tests whether the improvement in model fit from Model 1 to Model 2 is significant.
+    * The F-statistic for Model 2 compared to Model 1 is 57.174, indicating a significant improvement in fit (p < 2.2e-16).
+7. p-value (Pr(>F)):
+    * The p-value associated with Model 2 compared to Model 1 is highly significant (p < 2.2e-16).
+    * There's no significant difference between Model 2 and Model 3, as the p-value is not significant.
+
+
+##Q5 For the best model, identify the key assumptions (Multicollinearity, Linearity, Autocorrelation of Residuals, Normality of Residuals) underlying the OLS multiple regression approach. Using appropriate evidence, determine the degree to which each assumption is met. Mention the evidence (graphical/numeric) and conclude on the degree of assumption support.
+
+# Check multicollinearity
+```{r}
+check_collinearity(lm_2)
+```
+##Interpretation
+The multicollinearity assessment reveals no significant issues:
+- All predictors exhibit low VIF values (< 5), indicating minimal correlation.
+- Tolerance values (> 0.75) suggest each predictor contributes independently to the model.
+- Consequently, there are no concerns regarding multicollinearity, affirming the reliability of predictors in explaining the response variable.
+
+
+# Linearity Plots between each continuous predictor and the outcome provide indications as to whether this assumption is met.
+# Create a scatter plot of glyhb against age with smoothed trend lines
+# using both loess and linear regression methods
+# Initialize ggplot with the 'diabetes' dataset
+# Add scatter plot points for age vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in yellow
+
+```{r}
+ggplot(diabetes) +
+  geom_point(aes(x = age, y = glyhb)) +
+  geom_smooth(aes(x = age, y = glyhb), method = "loess") +
+  geom_smooth(aes(x = age, y = glyhb), method = "lm", color = "yellow")
+
+```
+
+##Interpretaion
+This graph shows how glycated hemoglobin (glyhb) levels change as people with diabetes get older. 
+- The scattered points represent individual data points.
+- The smoother, curvier line gives a general idea of how glyhb levels change with age.
+- The straight blue line represents the average change in glyhb levels for each year of age.
+
+Adding x (age) and y (glyhb) axis labels would make it clearer which information the graph is displaying.
+
+```{r}
+ggplot(diabetes) +
+  geom_point(aes(x = chol, y = glyhb)) +
+  geom_smooth(aes(x = chol, y = glyhb), method = "loess") +
+  geom_smooth(aes(x = chol, y = glyhb), method = "lm", color = "gray")
+
+```
+
+# Create a scatter plot of glyhb against chol (cholesterol) with smoothed trend lines
+# Initialize ggplot with the 'diabetes' dataset
+# Add scatter plot points for chol vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in gray
+
+```{r}
+ggplot(diabetes) +
+  geom_point(aes(x = stab.glu, y = glyhb)) +
+  geom_smooth(aes(x = stab.glu, y = glyhb), method = "loess") +
+  geom_smooth(aes(x = stab.glu, y = glyhb), method = "lm", color = "red")
+
+```
+##Interpretation
+This graph displays the relationship between glycated hemoglobin (glyhb) and cholesterol levels in people with diabetes.
+
+- The scattered points represent individual data points, showing how glyhb levels vary with cholesterol levels.
+- The smoother, curvy line gives a general idea of how glyhb levels change with cholesterol, capturing potential non-linear patterns.
+- The straight gray line represents the average change in glyhb levels associated with each unit increase in cholesterol, showing the overall trend.
+- The x-axis represents cholesterol levels, while the y-axis represents glycated hemoglobin levels.
+
+
+
+# Create a scatter plot of glyhb against hdl (high-density lipoprotein) with smoothed trend lines
+# Initialize ggplot with the 'diabetes' dataset
+# Add scatter plot points for hdl vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in red
+
+```{r}
+ggplot(diabetes) +
+  geom_point(aes(x = hdl, y = glyhb)) +
+  geom_smooth(aes(x = hdl, y = glyhb), method = "loess") +
+  geom_smooth(aes(x = hdl, y = glyhb), method = "lm", color = "red")
+
+```
+##Interpretaion
+This graph depicts the relationship between two variables: glycated hemoglobin (glyhb) and high-density lipoprotein (hdl) levels in individuals with diabetes.
+
+- The x-axis represents the levels of high-density lipoprotein (HDL), a type of cholesterol often referred to as "good" cholesterol.
+- The y-axis represents the levels of glycated hemoglobin (glyhb), which is a measure of average blood sugar levels over several months.
+
+The scattered points on the graph represent individual data points, showing how glyhb levels vary with hdl levels. The smoother, curvy line represents a generalized trend in the data using a method called loess, while the straight red line indicates the average change in glyhb levels associated with each unit increase in hdl levels using linear regression.
+
+```{r}
+ggplot(diabetes) +
+  geom_point(aes(x = weight, y = glyhb)) +
+  geom_smooth(aes(x = weight, y = glyhb), method = "loess") +
+  geom_smooth(aes(x = weight, y = glyhb), method = "lm", color = "green")
+
+```
+
+## Autocorrelation of Residuals
+# Check if the 'car' package is installed
+# Load the 'car' package 
+
+```{r}
+ if(!library("car", logical.return = TRUE)){
+   install.packages("car")
+ }
+library(car)
+```
+## check for auto-correlated errors - second model
+```{r}
+durbinWatsonTest(lm_2$fit)
+```
+## Autocorrelation of Residuals 
+
+# Create a spread-level plot for model 2
+#install.packages("car")
+```{r}
+library(car)
+
+lm_2 <- lm(glyhb ~ age + location + chol + stab.glu + hdl + weight, data = diabetes)
+class(lm_2)
+spreadLevelPlot(lm_2)
+
+```
+
+
+## Homogeneity of Variance in the Outcome Across Different Levels of Categorical Predictors
+```{r}
+#leveneTest(lm_2$fit)
+```
+
+```{r}
+shapiro.test(lm_2$residuals)
+
+```
+##Interpretaion
+The Shapiro-Wilk test results in a W statistic of 0.94949 and a p-value of 0.0001035. 
+
+This indicates strong evidence against the null hypothesis of normality, suggesting that the residuals from the linear regression model are not normally distributed.
+
+
+#Visual Depiction of Residuals
+# Install and load the tidyverse package for data manipulation and visualization
+# Create a histogram of residuals and overlay a normal distribution curve
+# Initialize ggplot with 'tempdf' and map residuals to x-axis
+# Plot histogram of residuals with density instead of count
+# Mean of residuals
+# Standard deviation of residuals
+
+```{r}
+
+install.packages("tidyverse")
+library(tidyverse)
+
+ggplot(tempdf, aes(residuals)) +
+  geom_histogram(aes(y = ..density..)) +
+  stat_function(fun = dnorm,
+                args = list(mean = mean(tempdf$residuals),
+                            sd = sd(tempdf$residuals)),
+                col = "white",
+                size = 1)
+
+```
+
+.
+
+##Q6 Based on the validity of assumptions, would you recommend any remedial steps to validate the model assumptions? If so, perform log transformation for the continuous predictors in your best prediction model from point 4, and comment on the degree to which log transformations improved the satisfaction of model assumptions.   
+# Load tidyverse
+# Create a scatter plot with smoothed trend line
+# Initialize ggplot with the 'diabetes' dataset
+# Add scatter plot points for log(age) vs. glyhb
+# Add a loess smoothed trend line
+# Add a linear regression trend line in red
+```{r}
+library(tidyverse)
+ggplot(diabetes) +
+  geom_point(aes(x = log(age), y = glyhb)) +
+  geom_smooth(aes(x = log(age), y = glyhb), method = "loess") +
+  geom_smooth(aes(x = log(age), y = glyhb), method = "lm", color = "red")
+
+```
+##Interpretaion
+The adjustment is intended to stabilize glucose levels, which might help in more accurately identifying non-linear trends.
+
+# Create a scatter plot depicting the relationship between the logarithm of cholesterol levels (x-axis) and glyhb levels (y-axis) in the diabetes dataset.
+# Add scatter plot points for log(chol) vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in black
+```{r}
+
+ggplot(diabetes) +
+  geom_point(aes(x = log(chol), y = glyhb)) +
+  geom_smooth(aes(x = log(chol), y = glyhb), method = "loess") +
+  geom_smooth(aes(x = log(chol), y = glyhb), method = "lm", color = "black")
+
+```
+
+##Interpretation 
+The adjustment is intended to stabilize glucose levels, which might help in more accurately identifying non-linear trends.
+
+# Generate a scatter plot to visualize the relationship between the logarithm of fasting plasma glucose levels (x-axis) and glyhb levels (y-axis) in the "diabetes" dataset
+# Add scatter plot points for log(stab.glu) vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in pink
+```{r}
+
+ggplot(diabetes) +
+  geom_point(aes(x = log(stab.glu), y = glyhb)) +
+  geom_smooth(aes(x = log(stab.glu), y = glyhb), method = "loess") +
+  geom_smooth(aes(x = log(stab.glu), y = glyhb), method = "lm", color = "pink")
+
+```
+##Interpretation
+The adjustment aims to stabilize glucose levels, potentially resulting in a more precise identification of non-linear trends.
+# Create a scatter plot depicting the relationship between the logarithm of high-density lipoprotein (HDL) levels (x-axis) and glyhb levels (y-axis) in the diabetes dataset.
+# Add scatter plot points for log(hdl) vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in yellow
+```{r}
+
+ggplot(diabetes) +
+  geom_point(aes(x = log(hdl), y = glyhb)) +
+  geom_smooth(aes(x = log(hdl), y = glyhb), method = "loess") +
+  geom_smooth(aes(x = log(hdl), y = glyhb), method = "lm", color = "yellow")
+
+```
+##Interpretaion
+The log-transformed data provides insights into the non-linear relationship between HDL and glyhb, whereas the untransformed data highlights both linear and non-linear trends in their original scales.
+
+
+# This code creates a scatter plot to visualize the relationship between the logarithm of weight (x-axis) and glyhb levels (y-axis) in the diabetes dataset.
+# Add scatter plot points for log(weight) vs. glyhb
+# Add a smoothed trend line using loess method
+# Add a linear regression trend line in green
+
+```{r}
+
+ggplot(diabetes) +
+  geom_point(aes(x = log(weight), y = glyhb)) +
+  geom_smooth(aes(x = log(weight), y = glyhb), method = "loess") +
+  geom_smooth(aes(x = log(weight), y = glyhb), method = "lm", color = "green")
+
+```
+##Interpretation
+same as original
+
+
+##Q6b Based on the validity of assumptions, would you recommend any remedial steps to validate the model assumptions? 
+# Fit a linear regression model with transformed variables
+# Display summary statistics of the model
+
+```{r}
+lm_4 <- lm(glyhb ~ log(age) + location + log(chol) + log(stab.glu) + log(hdl) + log(weight), data = diabetes)
+
+summary(lm_4)
+
+```
+##Interpretation
+- This linear regression model predicts glyhb levels based on various variables such as log(age), log(chol), log(stab.glu), log(hdl), and log(weight), along with the location.
+- The coefficients indicate the effect of each predictor on glyhb levels. For instance, higher log(stab.glu) and log(chol) are associated with increased glyhb levels, as indicated by their positive coefficients.
+- The model's multiple R-squared value of 0.7149 suggests that approximately 71.49% of the variability in glyhb levels can be explained by these predictors.
+- However, the coefficient for log(hdl) does not show a significant effect on glyhb levels.
+- Overall, the model is statistically significant in predicting glyhb levels, as indicated by the F-statistic and associated p-value.
+
+
+## Checking the normality of residuals of the newest model
+# Perform the Shapiro-Wilk test for normality on the residuals of the fitted model
+```{r}
+shapiro.test(residuals(lm_4))
+```
+##Interpretation
+- The Shapiro-Wilk normality test checks if the residuals of a regression model follow a normal distribution.
+- The test resulted in a W statistic of 0.96069 and a p-value of 0.0008268.
+- A p-value below the typical significance level (e.g., 0.05) suggests non-normality.
+- With a low p-value, we reject the null hypothesis of normality.
+- This implies that the residuals may not be normally distributed, affecting the reliability of the regression model's assumptions.
+
+##Q7 Are any further remedial measures needed? Mention some suggestions. 
+To improve model accuracy, we can weight data points differently, giving some more influence based on "within-group variance." This involves experimenting with various Weighted Least Squares (WLS) models.
+
+If our model's residuals show patterns or irregularities, we can transform the data (e.g., using inverses, square roots, or cube roots) to make it more consistent and reduce errors, thus enhancing model reliability.
+
+
+##Q8 What overall conclusions can you draw from the model results, considering the diagnostic information related to the validity of the modeling assumptions? (No code needed for this question.)
+Based on the model results and diagnostic information, we face several key challenges. The data shows high multicollinearity among some predictors, and the relationships between predictors and the outcome appear non-linear. Although ordinary least squares (OLS) regression provides statistically significant results and explains a substantial portion of the outcome variance, it might not be the best method for this data.
+
+A major concern is the lack of context regarding the data's origin, which makes it difficult to assess its reliability. To enhance the model, we could explore various ways to weight the data and transform the predictors. However, given that the variables do not meet the assumptions necessary for OLS regression, these adjustments may not fully resolve the issues.

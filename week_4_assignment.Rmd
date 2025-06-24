@@ -1,0 +1,367 @@
+---
+title: "week_4_assignment"
+author: "sharath kasula"
+date: "2024-06-16"
+output: html_document
+---
+
+
+For week 4 assignment, you are required to analyze the pima dataset that is part of the faraway package. After loading the dataset, try to spend some time to explore the variables and the Pima Indians sample (Hint: use? pima) before you perform the necessary analyses to answer the following questions:
+Note: you can use EITHER the glm() or the tidymodels fit() to build the logistic regression models.
+
+```{r}
+# Load the necessary libraries
+library(dplyr)
+library(ggplot2)
+```
+# Check if the faraway package is installed, if not, install it and load the library
+#Load and explore the pima dataset
+```{r}
+
+if(!library("faraway", logical.return = TRUE)){
+  install.packages("faraway")
+}
+
+library(faraway)
+
+summary(pima)
+View(pima)
+?pima
+
+```
+# Convert the test variable to a factor (it numeric in the pima dataset)
+# Set the reference level for the test variable to 0
+# Get a frequency table of the test variable and check the contrasts of the test factor variable
+```{r}
+pima$test <- as.factor(pima$test)
+
+
+pima$test <- relevel(pima$test, ref = "0")
+
+
+table(pima$test)
+contrasts(pima$test)
+```
+
+##Q1: Build a full model to predict test. What are the significant predictors? 
+# Fit a generalized linear model (GLM) with a binomial family
+# The dependent variable is 'test'
+# The independent variables are 'pregnant', 'glucose', 'diastolic', 'triceps', 'insulin', 'bmi', 'diabetes', and 'age'
+# print the summary of the fitted GLM
+```{r}
+lmod <- glm(test ~ pregnant + glucose + diastolic +triceps+insulin+bmi+diabetes+age, family = binomial, data = pima)
+summary(lmod)
+
+```
+###Interpretation
+Pregnancy: Each additional pregnancy increases the odds of a positive test (p < 0.001).
+Glucose: Higher glucose levels significantly increase the odds (p < 0.001).
+Diastolic blood pressure: Higher values slightly decrease the odds (p = 0.011).
+Triceps skinfold thickness and insulin levels: These variables are not significant predictors (p > 0.05).
+BMI: Higher BMI significantly increases the odds (p < 0.001).
+Diabetes pedigree function: A higher value significantly increases the odds (p = 0.001).
+Age: Not a significant predictor in this model (p > 0.05).
+
+
+###Q2: Using this model, interpret the odds ratio of age and pregnancy.
+# Extract the coefficients from the fitted GLM
+# Calculate and display the odds ratio for the 'pregnant' variable
+# Calculate and display the odds ratio for the 'age' variable
+```{r}
+(beta <- coef(lmod))
+
+exp(beta[2])
+exp(beta[9])
+```
+###Interpretation 
+Pregnancy: Each additional pregnancy increases the odds by approximately 13% (odds ratio = 1.131).
+Age: Each additional year of age increases the odds by approximately 1.5% (odds ratio = 1.015).
+
+#Q3 Next, build a model that excludes triceps and bmi. Determine whether this model has a fit that is statistically significantly different from the full model by referencing appropriate evidence.
+# Fit a generalized linear model with a binomial family
+# print the summary of the model
+```{r}
+lmods <- glm(
+  formula = test ~ pregnant + glucose + diastolic + insulin + diabetes + age, 
+  family = binomial, 
+  data = pima
+)
+
+summary(lmods)
+
+```
+###Interpretation
+Summary Statistics:
+* Pregnancy: Median of 3, indicating many individuals have been pregnant.
+* Glucose: Median of 117 mg/dL, suggesting a moderate average glucose level.
+* Diastolic: Median of 72 mm Hg, with a wide range from 0 to 122 mm Hg.
+* Insulin: Median of 30.5 IU/mL, varying significantly with a maximum of 846 IU/mL.
+* BMI: Median of 32, indicating a higher average body mass index.
+* Diabetes: Median of 0.3725, indicating a relatively low average diabetes pedigree function.
+* Age: Median of 29 years, with a wide range up to 81 years.
+Model Coefficients:
+* Pregnant, Glucose, and Diabetes are significant predictors (p < 0.05).
+* Diastolic, Insulin, and Age are not significant predictors (p > 0.05).
+* The intercept is significantly negative (p < 0.001), suggesting a baseline probability of a negative diabetes test.
+
+# Perform an analysis of deviance table using chi-square test
+# Compare the two models: lmods and lmod
+# The argument 'test="Chi"' specifies that the test statistic should be chi-square
+```{r}
+anova(lmods, lmod, test="Chi")
+```
+###Interpretation
+* Model 1: Includes predictors pregnant, glucose, diastolic, insulin, diabetes, and age.
+* Model 2: Expands on Model 1 by adding triceps, bmi, and including these variables alongside the original predictors.
+Interpretation:
+* Model 2 shows a significant improvement in fit compared to Model 1.
+* The chi-square test statistic of 45.32 with 2 degrees of freedom indicates that the addition of triceps and bmi significantly reduces the residual deviance (from 768.77 to 723.45, respectively).
+* The p-value (1.441e-10) suggests strong evidence against the null hypothesis, indicating that Model 2 provides a significantly better fit than Model 1 for predicting the likelihood of diabetes.
+
+
+#Q4Looking at the prediction accuracy values, which model, the full or the reduced, has a better predictive accuracy? Support your answer with appropriate evidence.
+
+#########prediction using logistic regression models##########
+
+In practical terms, we need to determine how well our model performs in terms of its predictive accuracy. Here we create a cross-tab between the values we predict and the value that were observed and use the results for computing the accuracy. The code below illustrates this computation.
+#For the model lmod
+# Remove rows with missing values from the pima dataset
+# Add a new column 'predprob' with predicted probabilities from the fitted GLM model (lmod)
+# Add a new column 'predout' to classify based on predicted probabilities
+# Create a contingency table of actual vs. predicted outcomes
+# Calculate the classification accuracy
+# Print the classification accuracy
+```{r}
+pimam <- na.omit(pima)
+pimam <- mutate(pimam, predprob=predict(lmod,type="response"))
+
+pimam <- mutate(pimam, predout=ifelse(predprob < 0.5, "no", "yes"))
+tab.results <- xtabs( ~ test + predout, pimam)
+
+class.rate <- (tab.results[1,1]+tab.results[2,2])/sum(tab.results)
+print(paste("The classification accuracy is: ",
+            round(class.rate * 100, 4), "%", sep=""))
+
+```
+###Interpretation
+- The model achieved a classification accuracy of 78.2552%.
+- This percentage represents the proportion of correctly predicted outcomes compared to the total number of observations.
+- It indicates that the model accurately predicted the diabetes test outcome for approximately 78.2552% of the cases in the dataset.
+- A higher classification accuracy suggests the model is reasonably effective in distinguishing between positive and negative diabetes test results based on the given predictors.
+
+# Define a sequence of threshold values from 0.01 to 0.5 with an increment of 0.01
+# Initialize empty vectors to store Sensitivity and Specificity values
+# Loop through each threshold value
+# Create a contingency table of actual vs. predicted outcomes
+# Calculate Specificity and Sensitivity for the current threshold
+```{r}
+thresh <- seq(0.01,0.5,0.01)
+Sensitivity <- numeric(length(thresh))
+Specificity <- numeric(length(thresh))
+
+for(j in seq(along=thresh)){
+    pp <- ifelse(pimam$predprob < thresh[j],"no","yes")
+    xx <- xtabs( ~ test + pp, pimam)
+    Specificity[j] <- xx[1,1]/(xx[1,1]+xx[1,2])
+    Sensitivity[j] <- xx[2,2]/(xx[2,1]+xx[2,2])
+}
+
+```
+
+# Plot Sensitivity and Specificity against different threshold values
+# x-axis: threshold values
+# y-axis: Sensitivity and Specificity values
+# Type of plot: line plot
+# Label for x-axis
+# Label for y-axis
+# Line types: solid for Sensitivity, dashed for Specificity
+```{r}
+matplot(thresh,
+        cbind(Sensitivity, Specificity),
+        type="l",
+        xlab="Threshold",
+        ylab="Proportion",lty=1:2)
+```
+###Interpretation
+The graph shows how changing a "Threshold" (x-axis) from 0 to 0.5 affects a "Proportion" (y-axis) ranging from 0 to 1.
+
+The solid black line decreases as the threshold increases, indicating a declining proportion.
+The dashed red line increases with the threshold, showing a rising proportion.
+This plot illustrates how adjusting the threshold impacts the proportion of some outcome, with each line representing a different trend in response to varying threshold values.
+
+# Plot Sensitivity against (1 - Specificity)
+# Add a diagonal line representing the line of equality (y = x)
+```{r}
+plot(1-Specificity,Sensitivity,type="l")
+abline(0,1,lty=2)
+
+```
+###Interpretation
+The graph shows two lines plotting Sensitivity (y-axis) against 1 - Specificity (x-axis). This type of plot is called a Receiver Operating Characteristic (ROC) curve, commonly used to assess how well a binary classifier performs.
+
+Solid Curve: Represents the performance of a specific classifier on a dataset. It shows how well the classifier correctly identifies positive cases (Sensitivity) compared to its rate of falsely identifying negative cases as positive (1 - Specificity).
+
+Dotted Curve: Represents a baseline or reference performance, like that of a random classifier or another model for comparison.
+
+Top-Left Corner: Ideal performance is at the top-left corner (1, 1), where Sensitivity is 100% and Specificity (no false positives) is also 100%.
+
+Interpretation: The closer the solid curve is to the top-left corner, the better the classifier's performance. It indicates that the classifier balances correctly identifying positive cases while minimizing false positives.
+
+Comparison: If the solid curve is consistently above the dotted curve, it shows the classifier performs better than the reference across various thresholds.
+
+Practical Use: ROC curves help compare different classifiers and decide the best balance between correctly identifying positives and avoiding false positives based on specific needs of the application.
+
+# Remove rows with missing values from the pima dataset
+# Add a new column 'predprob' with predicted probabilities from the glm model
+```{r}
+pimams <- na.omit(pima)
+
+pimams <- mutate(pimams, predprob = predict(lmod, type = "response"))
+
+```
+
+# Add a new column 'predout' to classify based on predicted probabilities
+# Create a contingency table of actual vs. predicted outcomes
+# Calculate the classification accuracy
+# Print the classification accuracy
+```{r}
+
+pimams <- mutate(pimams, predout = ifelse(predprob < 0.5, "no", "yes"))
+
+
+tab_results <- xtabs(~ test + predout, data = pimams)
+
+class_rate <- (tab_results[1,1] + tab_results[2,2]) / sum(tab_results)
+
+
+cat("The classification accuracy is:", round(class_rate * 100, 4), "%\n")
+
+```
+###Interpretation
+The classification accuracy of the model is 76.6927%. This percentage indicates the proportion of correctly predicted outcomes (both positive and negative) compared to the total number of observations in the dataset. In other words, the model accurately predicted the diabetes test outcomes for approximately 76.6927% of the cases evaluated. A higher classification accuracy suggests that the model performs reasonably well in distinguishing between individuals who have diabetes and those who do not, based on the predictors used in the analysis.
+
+
+# Define a sequence of threshold values
+# Initialize vectors to store Sensitivity and Specificity values
+# Calculate Sensitivity and Specificity for each threshold
+```{r}
+thresh <- seq(0.01, 0.5, 0.01)
+
+
+Sensitivity <- numeric(length(thresh))
+Specificity <- numeric(length(thresh))
+
+
+for (j in seq_along(thresh)) {
+    pp <- ifelse(pimams$predprob < thresh[j], "no", "yes")
+    xx <- xtabs(~ test + pp, data = pimams)
+    Specificity[j] <- xx[1,1] / (xx[1,1] + xx[1,2])
+    Sensitivity[j] <- xx[2,2] / (xx[2,1] + xx[2,2])
+}
+
+```
+
+# Plot Sensitivity and Specificity against different threshold values
+```{r}
+matplot(thresh,
+        cbind(Sensitivity, Specificity),
+        type="l",
+        xlab="Threshold",
+        ylab="Proportion",lty=1:2)
+
+```
+###Interpretation
+The graph shows how the proportion of a population changes as we vary a "Threshold" value along the x-axis. This threshold could be a cutoff point or a measure we're testing.
+
+X-axis (Threshold): This represents different threshold values we're examining.
+
+Y-axis (Proportion): Shows the proportion of the population that meets or falls below each threshold value.
+
+Increasing Slope: As the threshold value increases along the x-axis, the proportion of the population meeting or falling below that threshold also increases. This suggests more of the population is included as we raise the threshold.
+
+Range (0 to 1): The y-axis scale from 0 to 1 indicates that the data is scaled proportionally. For example, a value of 0.4 on the y-axis means 40% of the population meets or falls below that specific threshold.
+
+Interpreting Shape: The shape of the line can hint at how the data is distributed. If it forms an S-shape, it might imply the data follows a normal distribution pattern, where values cluster around a central average.
+
+#Q5 For the better model, perform the needed key diagnostics and interpret the results of the model based on what you find here. Hint: revisit Diagnosing issues related to model fit recording
+# Load necessary libraries
+# For data manipulation tasks
+# For creating plots
+# Add columns to the 'pima' dataset for residuals and linear predictions
+# Calculate residuals using the model 'lmod'
+# Calculate linear predictions using the model 'lmod'
+# Group the 'pima' dataset based on quantiles of 'linpred' values
+```{r}
+library(dplyr)
+library(ggplot2)
+pimams <- mutate(pimams, residuals=residuals(lmod), linpred=predict(lmod))
+gdf <- group_by(pimams, cut(linpred, breaks=unique(quantile(linpred, (1:100)/101))))
+```
+
+# Summarize the grouped data frame 'gdf'
+# Calculate the mean of 'residuals' within each group
+# Calculate the mean of 'linpred' within each group
+```{r}
+diagdf <- summarise(gdf, residuals=mean(residuals), linpred=mean(linpred))
+```
+
+# Create a scatter plot to visualize the relationship between 'residuals' and 'linpred' in 'diagdf'
+# Plot 'residuals' on the y-axis against 'linpred' on the x-axis
+# Use data from the 'diagdf' data frame
+# Label for the x-axis
+# Label for the y-axis
+```{r}
+plot(residuals ~ linpred, diagdf, xlab="linear predictor")
+```
+###Interpretation
+The scatter plot has the x-axis labeled as "linear predictor" and the y-axis as "residuals."
+
+Understanding Residuals: Residuals represent the differences between observed values and predicted values by a model. They show how much the actual data points deviate from what the model predicts.
+
+Interpreting the Scatter Plot: The plot shows how residuals change with respect to the linear predictor values. A negative correlation would mean that as the linear predictor values increase, the residuals tend to decrease.
+
+Observations: In this plot, most points cluster around the center, indicating a weak negative relationship between residuals and the linear predictor. This means as the predicted values increase, the differences between actual and predicted values generally decrease.
+
+Highlighted Points: There are two points circled in blue at (3, 0.5) and (-3, -0.5). These points could be outliers, meaning they significantly differ from the pattern seen in most data points. They might also be influential, meaning they strongly impact the model's fit.
+
+
+# Create a Quantile-Quantile (Q-Q) plot to assess normality of residuals from model 'lmod'
+```{r}
+qqnorm(residuals(lmod))
+```
+###Interpretation
+X-axis Label: The x-axis is labeled as "Sample Quantiles". This axis represents quantiles (divisions) of the data being analyzed.
+
+Y-axis Label: The y-axis is labeled as "Theoretical Quantiles". It shows the expected quantiles if the data followed a perfect theoretical (normal) distribution.
+
+Understanding Quantiles: Each point on the plot represents a specific quantile of the dataset. Quantiles divide the data into equal parts. For instance, the median is the 50th percentile, dividing the data into two equal halves.
+
+Comparison in Q-Q Plot: In a normal Q-Q plot like the one shown, the quantiles of the dataset are plotted against the quantiles they would have if they followed a perfect normal distribution. If the dataset is normally distributed, the points should align closely along a straight diagonal line.
+
+Observations from the Plot: The points in this specific Q-Q plot are roughly aligned along a straight line. This alignment suggests that the dataset being analyzed is likely normally distributed.
+
+Equal Axis Scales: Both x-axis and y-axis scales are the same indicates that the dataset being compared to the theoretical normal distribution has similar variances.
+
+# Example of checking hat values (leverage values) of a glm model 'lmod'
+```{r}
+halfnorm(hatvalues(lmod))
+
+```
+###Interpretation
+* X-axis Label: Shows values from a half-normal distribution.
+* Y-axis Label: Displays the data sorted from smallest to largest. 
+* Understanding the Plot: Points initially form a straight line, suggesting the data may follow a half-normal pattern for lower values. However, they later deviate upwards, indicating more higher values than expected.
+* Y-axis Range: Starts at 0, goes beyond 0.5 due to the half-normal distribution's nature.
+* Curve Upwards: Towards the right, points bend upward, suggesting more high values than typical for a half-normal distribution.
+
+#Q6 Reflection: This module provided an introduction to the large field of statistical modeling. What statistical modeling ideas or concepts are you curious to know more about after this module? Why?
+1. Sophisticated Model Selection; I am keen on delving into the process of selecting the suitable model from a range of options using criteria such as AIC, BIC and cross validation. This knowledge can lead to the development of dependable models.
+
+2. Regularization Techniques; Methods like Lasso and Ridge regression play a role in preventing overfitting by imposing penalties on the model. Understanding and utilizing these techniques can enhance my capability to address challenges like multicollinearity and handling data.
+
+3. Bayesian Statistics; By utilizing probability for model estimation and prediction this methodology provides insights into the uncertainty surrounding model parameters and predictions. Exploring approaches would enrich my understanding of modeling.
+
+4. Analysis of Time Series Data; Given the nature of time series data acquiring knowledge about methods such as ARIMA, GARCH and state space models would be both intriguing and beneficial for analyzing data effectively.
+
+5. Integration of Machine Learning; The fusion of models with machine learning methodologies like decision trees, random forests and neural networks holds potential, for predictive analytics. Grasping how these methods complement each other could prove advantageous.
+Understanding causality is crucial as we need to differentiate between correlation and causation. Techniques, like variables propensity score matching and difference in differences are useful, in establishing causality across fields. Delving deeper into these methods will help me improve my skills and expand my toolbox for analyzing datasets.
